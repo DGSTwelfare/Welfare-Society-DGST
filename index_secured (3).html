@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- SECURITY HEADERS -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta name="referrer" content="no-referrer">
+    <title>DGST Welfare Society - Monthly Tracking System v5.2</title>
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏛️</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --navy: #0f1c3f;
+  --navy-mid: #162447;
+  --indigo: #4f46e5;
+  --indigo-light: #818cf8;
+  --gold: #f59e0b;
+  --gold-light: #fcd34d;
+  --emerald: #10b981;
+  --rose: #f43f5e;
+  --surface: rgba(255,255,255,0.92);
+  --surface-hover: rgba(255,255,255,0.98);
+  --border: rgba(79,70,229,0.12);
+  --shadow-soft: 0 4px 24px rgba(15,28,63,0.08);
+  --shadow-card: 0 8px 40px rgba(15,28,63,0.12);
+  --shadow-lift: 0 20px 60px rgba(15,28,63,0.18);
+  --radius: 18px;
+  --radius-sm: 12px;
+}
+
+* { font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif; margin: 0; padding: 0; box-sizing: border-box; }
+h1,h2,h3,h4,h5 { font-family: 'Outfit', sans-serif; }
+
+body {
+  background: #0f1c3f;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 0%, rgba(99,102,241,0.25) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 80% 100%, rgba(245,158,11,0.15) 0%, transparent 50%),
+    radial-gradient(ellipse 50% 70% at 50% 50%, rgba(16,185,129,0.08) 0%, transparent 70%),
+    linear-gradient(160deg, #0f1c3f 0%, #162447 50%, #1a1f4e 100%);
+  z-index: 0;
+  pointer-events: none;
+}
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 32px 32px;
+  z-index: 0;
+  pointer-events: none;
+}
+#app, #loginScreen, #loadingOverlay { position: relative; z-index: 1; }
+
+/* GLASSMORPHISM CARDS */
+.glass-card {
+  background: var(--surface);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.6);
+  box-shadow: var(--shadow-card);
+  border-radius: var(--radius);
+}
+
+/* ANIMATIONS */
+.fade-in { animation: fadeIn 0.6s cubic-bezier(0.16,1,0.3,1) both; }
+@keyframes fadeIn { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
+@keyframes shake { 0%,100%{transform:translateX(0)} 15%,45%,75%{transform:translateX(-6px)} 30%,60%,90%{transform:translateX(6px)} }
+.shake { animation: shake 0.5s ease-in-out; }
+@keyframes pulse-glow { 0%{box-shadow:0 0 0 0 rgba(16,185,129,.6)} 70%{box-shadow:0 0 0 12px rgba(16,185,129,0)} 100%{box-shadow:0 0 0 0 rgba(16,185,129,0)} }
+.pulse { animation: pulse-glow 2.5s infinite; }
+@keyframes spin { 0%{transform:rotate(0deg)} 100%{transform:rotate(360deg)} }
+@keyframes float { 0%,100%{transform:translateY(0px)} 50%{transform:translateY(-6px)} }
+@keyframes shimmer { 0%{background-position:-200% center} 100%{background-position:200% center} }
+@keyframes slideDown { from{opacity:0;transform:translateY(-10px)} to{opacity:1;transform:translateY(0)} }
+
+/* HOVER LIFT */
+.hover-lift { transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.25s ease; cursor: pointer; }
+.hover-lift:hover { transform: translateY(-6px) scale(1.01); box-shadow: var(--shadow-lift); }
+
+/* STATUS BADGES */
+.status-badge { padding: 3px 12px; border-radius: 30px; font-size: 11px; font-weight: 700; display: inline-block; letter-spacing: 0.3px; }
+.status-active { background: linear-gradient(135deg,#d1fae5,#a7f3d0); color: #065f46; border: 1px solid #6ee7b7; }
+.status-retired { background: linear-gradient(135deg,#fee2e2,#fecaca); color: #991b1b; border: 1px solid #fca5a5; }
+.status-parked { background: linear-gradient(135deg,#f1f5f9,#e2e8f0); color: #475569; border: 1px solid #cbd5e1; }
+.status-transferred { background: linear-gradient(135deg,#ede9fe,#ddd6fe); color: #5b21b6; border: 1px solid #c4b5fd; }
+.status-advance { background: linear-gradient(135deg,#dbeafe,#bfdbfe); color: #1d4ed8; border: 2px solid #60a5fa; }
+.advance-highlight { background: linear-gradient(135deg,#eff6ff,#dbeafe); border-left: 4px solid #3b82f6; }
+
+/* ACTION BUTTONS */
+.action-btn { padding: 5px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; border: none; transition: all 0.2s; }
+.edit-btn { background: linear-gradient(135deg,#3b82f6,#2563eb); color: white; box-shadow: 0 2px 8px rgba(59,130,246,0.4); }
+.edit-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(59,130,246,0.5); }
+
+/* SPINNER */
+.spinner { border: 3px solid rgba(79,70,229,0.15); border-top: 3px solid var(--indigo); border-radius: 50%; width: 44px; height: 44px; animation: spin 0.8s linear infinite; margin: 0 auto; }
+
+/* RECEIPTS */
+.receipt-container { border: 2px solid #1e3a5f; max-width: 800px; margin: 0 auto; padding: 30px; background: white; font-family: 'Courier New', monospace; position: relative; border-radius: 8px; }
+.receipt-header { text-align: center; border-bottom: 3px double #1e3a5f; padding-bottom: 20px; margin-bottom: 30px; }
+.receipt-amount { font-size: 26px; font-weight: 800; color: #065f46; text-align: center; margin: 20px 0; padding: 18px; background: linear-gradient(135deg,#d1fae5,#a7f3d0); border-radius: 12px; border: 2px solid #34d399; }
+.receipt-table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+.receipt-table th, .receipt-table td { padding: 9px; border: 1px solid #e2e8f0; }
+.receipt-table th { background: #f8fafc; font-weight: 700; }
+.receipt-footer { margin-top: 40px; padding-top: 20px; border-top: 2px dashed #94a3b8; }
+.receipt-stamp { border: 2px dashed #e11d48; padding: 10px 20px; text-align: center; font-weight: 700; color: #e11d48; border-radius: 6px; }
+.watermark { position: absolute; opacity: .06; font-size: 100px; transform: rotate(-45deg); z-index: 0; top: 30%; left: 10%; font-weight: 900; pointer-events: none; font-family: 'Outfit', sans-serif; }
+
+/* EXPORT & ACTION BUTTONS */
+.excel-export-btn { background: linear-gradient(135deg,#059669,#047857); color: white; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: 700; transition: all 0.25s; box-shadow: 0 3px 12px rgba(5,150,105,0.35); }
+.excel-export-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(5,150,105,0.45); }
+.whatsapp-share-btn { background: linear-gradient(135deg,#25D366,#128C7E); color: white; border: none; padding: 12px 24px; border-radius: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; transition: all 0.25s; width: 100%; box-shadow: 0 3px 12px rgba(37,211,102,0.35); }
+.whatsapp-share-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(37,211,102,0.45); }
+.download-btn { background: linear-gradient(135deg,#4f46e5,#4338ca); color: white; border: none; padding: 12px 24px; border-radius: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; transition: all 0.25s; width: 100%; box-shadow: 0 3px 12px rgba(79,70,229,0.35); }
+.download-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(79,70,229,0.45); }
+
+/* BALANCE SHEET TABLE */
+.balance-sheet-table { width: 100%; border-collapse: collapse; border-radius: 10px; overflow: hidden; }
+.balance-sheet-table th, .balance-sheet-table td { padding: 11px 13px; border: 1px solid #e2e8f0; font-size: 13px; }
+.balance-sheet-table th { background: linear-gradient(135deg,#1e3a5f,#162447); color: white; font-weight: 700; letter-spacing: 0.3px; }
+.balance-sheet-table tr:nth-child(even) { background: #f8fafc; }
+.balance-sheet-table .total-row { background: linear-gradient(135deg,#d1fae5,#a7f3d0) !important; font-weight: 800; font-size: 14px; }
+.balance-sheet-table .expense-row { background: #fff7ed !important; }
+.balance-sheet-table .income-row { background: #f0fdf4 !important; }
+
+/* DATE FILTER BAR */
+.date-filter-bar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 12px 16px; background: linear-gradient(135deg,#eef2ff,#e0e7ff); border-radius: 14px; border: 1px solid #c7d2fe; }
+.date-filter-bar input[type="date"] { padding: 7px 12px; border: 2px solid #c7d2fe; border-radius: 9px; font-size: 13px; outline: none; font-family: 'Plus Jakarta Sans', sans-serif; background: white; }
+.date-filter-bar input[type="date"]:focus { border-color: var(--indigo); }
+.date-filter-bar button { padding: 7px 16px; border-radius: 9px; font-size: 12px; font-weight: 700; cursor: pointer; border: none; transition: all 0.2s; }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 7px; }
+::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
+::-webkit-scrollbar-thumb { background: linear-gradient(180deg,#818cf8,#4f46e5); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #4338ca; }
+
+/* SYNC BADGE */
+.sync-badge { position: fixed; bottom: 22px; left: 22px; z-index: 1000; padding: 7px 16px; border-radius: 30px; font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 7px; box-shadow: 0 4px 16px rgba(0,0,0,0.25); background: linear-gradient(135deg,#10b981,#059669); color: white; transition: all 0.35s; letter-spacing: 0.3px; }
+.sync-badge i.spinning { animation: spin 0.8s linear infinite; }
+
+/* LOADING OVERLAY */
+.loading-overlay { position: fixed; inset: 0; background: linear-gradient(160deg,#0f1c3f,#162447,#1a1f4e); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; }
+
+/* LOGO HOVER */
+.logo-hover-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.55); display: flex; align-items: center; justify-content: center; border-radius: 12px; opacity: 0; transition: opacity 0.3s; cursor: pointer; }
+.logo-hover-overlay:hover { opacity: 1; }
+
+/* HEADER */
+header { background: linear-gradient(135deg, rgba(15,28,63,0.97) 0%, rgba(26,31,78,0.97) 100%) !important; backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.08); box-shadow: 0 4px 30px rgba(0,0,0,0.3) !important; }
+
+/* MAIN CONTAINER */
+main { background: transparent; }
+
+/* STAT BANNER */
+.stat-banner { background: linear-gradient(135deg,rgba(255,255,255,0.08),rgba(255,255,255,0.04)); border: 1px solid rgba(255,255,255,0.12); border-radius: 20px; backdrop-filter: blur(10px); }
+.stat-banner .stat-val { background: rgba(255,255,255,0.12); border-radius: 12px; }
+
+/* MODAL */
+#modal > div { border-radius: 22px; overflow: hidden; box-shadow: 0 25px 80px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); }
+#modal > div > div:first-child { background: linear-gradient(135deg,#1e3a5f 0%,#312e81 100%) !important; padding: 20px 24px !important; }
+
+/* TOAST */
+#toast { border-radius: 16px !important; background: linear-gradient(135deg,#1e293b,#0f172a) !important; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 40px rgba(0,0,0,0.4) !important; }
+
+/* QUICK ACTION CARDS */
+.qa-card { transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1); border-radius: 18px; overflow: hidden; position: relative; }
+.qa-card::before { content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(255,255,255,0) 0%,rgba(255,255,255,0.06) 100%); opacity:0; transition:opacity 0.3s; border-radius:18px; }
+.qa-card:hover { transform: translateY(-8px) scale(1.03); box-shadow: 0 24px 60px rgba(0,0,0,0.25); }
+.qa-card:hover::before { opacity:1; }
+
+/* FORM INPUTS */
+input[type=text], input[type=password], input[type=number], input[type=date], input[type=email], select, textarea {
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  border-radius: 10px !important;
+  transition: border-color 0.2s, box-shadow 0.2s !important;
+}
+input:focus, select:focus, textarea:focus {
+  outline: none !important;
+  border-color: var(--indigo) !important;
+  box-shadow: 0 0 0 3px rgba(79,70,229,0.12) !important;
+}
+
+/* BUTTONS */
+button { font-family: 'Plus Jakarta Sans', sans-serif !important; }
+
+/* FOOTER */
+footer { background: linear-gradient(135deg,#0f1c3f,#162447) !important; border-top: 1px solid rgba(255,255,255,0.08); }
+
+@media print { .no-print{display:none!important} body{background:white!important} body::before,body::after{display:none} }
+</style>
+</head>
+<body class="bg-gray-50">
+
+<div id="loadingOverlay" class="loading-overlay">
+    <div style="text-align:center;padding:20px">
+        <div style="width:72px;height:72px;border:3px solid rgba(245,158,11,0.2);border-top:3px solid #f59e0b;border-radius:50%;animation:spin 0.9s linear infinite;margin:0 auto"></div>
+        <div style="margin-top:28px">
+            <p style="font-family:Outfit,sans-serif;font-size:22px;font-weight:700;color:white;letter-spacing:-0.3px">DGST Welfare Society</p>
+            <p style="font-family:Plus Jakarta Sans,sans-serif;font-size:13px;color:rgba(165,180,252,0.8);margin-top:6px;font-weight:500" id="loadingStatus">Connecting to database...</p>
+        </div>
+        <div style="margin-top:24px;display:flex;gap:6px;justify-content:center">
+            <span style="width:7px;height:7px;background:#4f46e5;border-radius:50%;animation:pulse-glow 1.5s infinite 0s;display:inline-block"></span>
+            <span style="width:7px;height:7px;background:#818cf8;border-radius:50%;animation:pulse-glow 1.5s infinite 0.3s;display:inline-block"></span>
+            <span style="width:7px;height:7px;background:#c7d2fe;border-radius:50%;animation:pulse-glow 1.5s infinite 0.6s;display:inline-block"></span>
+        </div>
+    </div>
+</div>
+<div id="syncBadge" class="sync-badge hidden">
+    <i class="fas fa-circle text-xs" id="syncDot"></i>
+    <span id="syncText">Live</span>
+</div>
+
+<div id="reminderBanner" class="hidden fixed top-20 left-1/2 transform -translate-x-1/2 z-50 w-11/12 max-w-2xl">
+    <div class="bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-xl shadow-2xl p-4">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center"><i class="fas fa-bell text-2xl"></i></div>
+                <div><h3 class="font-bold text-lg">Payment Reminder!</h3><p class="text-sm opacity-90" id="reminderText">0 pending</p></div>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="sendBulkReminders()" class="bg-white text-orange-600 px-4 py-2 rounded-lg font-bold text-sm"><i class="fab fa-whatsapp mr-1"></i>Send All</button>
+                <button onclick="closeReminderBanner()" class="text-white hover:text-gray-200"><i class="fas fa-times text-xl"></i></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="loginScreen" class="hidden"></div>
+
+<div id="app" class="fade-in hidden">
+    <header style="background:linear-gradient(135deg,rgba(15,28,63,0.98),rgba(26,31,78,0.98));backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.08);box-shadow:0 4px 30px rgba(0,0,0,0.3);position:sticky;top:0;z-index:40">
+        <div class="container mx-auto px-4 md:px-6" style="padding-top:14px;padding-bottom:14px">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-3 md:gap-4">
+                    <div style="width:58px;height:58px;border-radius:18px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:linear-gradient(135deg,rgba(245,158,11,0.3),rgba(245,158,11,0.12));border:2px solid rgba(245,158,11,0.5);cursor:pointer;position:relative;box-shadow:0 4px 16px rgba(245,158,11,0.25);flex-shrink:0" class="group" id="headerLogoBox" onclick="isA()&&showLogoUploadModal()" title="Click to change logo/icon (Admin only)">
+                        <i class="fas fa-building" id="headerLogoIcon" style="color:#f59e0b;font-size:28px"></i>
+                        <img id="headerLogoImg" class="hidden w-full h-full object-cover" style="border-radius:16px" alt="Logo">
+                        <div class="admin-only logo-hover-overlay group-hover:opacity-100"><i class="fas fa-camera text-white text-sm"></i></div>
+                    </div>
+                    <div>
+                        <div style="display:flex;flex-direction:column;gap:2px">
+                            <h1 style="font-family:Outfit,sans-serif;font-size:clamp(20px,3.5vw,30px);font-weight:900;letter-spacing:-0.5px;line-height:1.1;background:linear-gradient(90deg,#ffffff 0%,#fcd34d 50%,#f59e0b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">DGST Welfare Society</h1>
+                            <div style="display:flex;align-items:center;gap:6px;margin-top:3px">
+                                <span style="width:18px;height:2px;background:linear-gradient(90deg,#f59e0b,rgba(245,158,11,0.3));border-radius:2px;display:inline-block"></span>
+                                <p style="font-size:11px;color:rgba(165,180,252,0.7);font-weight:600;font-family:Plus Jakarta Sans,sans-serif;letter-spacing:0.3px">v5.2 Cloud &nbsp;·&nbsp; Full Audit 📊</p>
+                                <span style="width:18px;height:2px;background:linear-gradient(90deg,rgba(245,158,11,0.3),#f59e0b);border-radius:2px;display:inline-block"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 md:gap-4">
+                    <div class="hidden md:block text-right">
+                        <p style="font-size:12px;color:rgba(165,180,252,0.7);font-weight:500" id="currentDateTime"></p>
+                        <p style="font-size:12px;font-weight:700;color:rgba(255,255,255,0.9)" id="userRole">Administrator</p>
+                    </div>
+                    <div class="relative">
+                        <button id="userMenuBtn" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);color:white;padding:9px 18px;border-radius:12px;font-weight:600;font-size:13px;display:flex;align-items:center;gap:8px;transition:all 0.2s;cursor:pointer;backdrop-filter:blur(10px)" onmouseover="this.style.background='rgba(255,255,255,0.14)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
+                            <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#4f46e5,#818cf8);display:flex;align-items:center;justify-content:center;font-size:12px"><i class="fas fa-user"></i></div>
+                            <span id="userRoleText" class="hidden md:inline">Admin</span>
+                            <i class="fas fa-chevron-down text-xs" style="color:rgba(165,180,252,0.7)"></i>
+                        </button>
+                        <div id="userDropdown" class="hidden absolute right-0 mt-3 w-56" style="background:white;border-radius:18px;box-shadow:0 20px 60px rgba(0,0,0,0.25);border:1px solid rgba(0,0,0,0.06);overflow:hidden;animation:slideDown 0.2s ease">
+                            <div style="padding:16px 18px;background:linear-gradient(135deg,#f8faff,#f0f4ff);border-bottom:1px solid #e8ecff">
+                                <p style="font-weight:700;color:#1e293b;font-size:14px" id="dropdownUserName">Admin</p>
+                                <p style="font-size:11px;color:#94a3b8;margin-top:2px">DGST Welfare Society</p>
+                            </div>
+                            <div style="padding:6px 0">
+                                <button onclick="showSettingsModal()" class="admin-only" style="width:100%;text-align:left;padding:11px 18px;background:transparent;border:none;color:#334155;display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;cursor:pointer;transition:background 0.15s" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'"><i class="fas fa-cog" style="color:#94a3b8;width:16px"></i>Settings</button>
+                                <button onclick="showLogoUploadModal()" class="admin-only" style="width:100%;text-align:left;padding:11px 18px;background:transparent;border:none;color:#334155;display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;cursor:pointer;transition:background 0.15s" onmouseover="this.style.background='#f0fdfa'" onmouseout="this.style.background='transparent'"><i class="fas fa-image" style="color:#0d9488;width:16px"></i>Change Logo</button>
+                                <button onclick="showWelfareSchemes()" style="width:100%;text-align:left;padding:11px 18px;background:transparent;border:none;color:#334155;display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;cursor:pointer;transition:background 0.15s" onmouseover="this.style.background='#f0fdf4'" onmouseout="this.style.background='transparent'"><i class="fas fa-hand-holding-heart" style="color:#16a34a;width:16px"></i>Welfare Schemes</button>
+                                <button onclick="showActivityLog()" class="admin-only" style="width:100%;text-align:left;padding:11px 18px;background:transparent;border:none;color:#334155;display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;cursor:pointer;transition:background 0.15s" onmouseover="this.style.background='#eef2ff'" onmouseout="this.style.background='transparent'"><i class="fas fa-clipboard-list" style="color:#4f46e5;width:16px"></i>Activity Log</button>
+                                <button onclick="showChangePasswordModal()" class="admin-only" style="width:100%;text-align:left;padding:11px 18px;background:transparent;border:none;color:#334155;display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;cursor:pointer;transition:background 0.15s" onmouseover="this.style.background='#faf5ff'" onmouseout="this.style.background='transparent'"><i class="fas fa-key" style="color:#7c3aed;width:16px"></i>Change Passwords</button>
+                                <div style="border-top:1px solid #f1f5f9;margin:4px 0"></div>
+                                <button onclick="logout()" style="width:100%;text-align:left;padding:11px 18px;background:transparent;border:none;color:#ef4444;display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;cursor:pointer;transition:background 0.15s" onmouseover="this.style.background='#fff1f2'" onmouseout="this.style.background='transparent'"><i class="fas fa-sign-out-alt" style="width:16px"></i>Logout</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-3 md:px-5 py-6 md:py-8">
+        <div style="background:linear-gradient(135deg,rgba(15,28,63,0.7),rgba(26,31,78,0.7));border:1px solid rgba(255,255,255,0.1);border-radius:22px;padding:20px 24px;margin-bottom:24px;backdrop-filter:blur(16px)">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="text-center md:text-left">
+                    <h2 style="font-family:Outfit,sans-serif;font-size:clamp(16px,3vw,22px);font-weight:800;color:white;letter-spacing:-0.3px"><i class="fas fa-calendar-alt mr-2" style="color:#f59e0b"></i><span id="currentMonthYear">Loading...</span></h2>
+                    <div class="flex items-center justify-center md:justify-start gap-2 mt-2">
+                        <i class="fas fa-circle text-xs animate-pulse" style="color:#10b981;font-size:8px"></i>
+                        <span style="font-size:12px;color:rgba(165,180,252,0.8)">DB: <span id="firebaseStatusText" style="font-weight:700;color:#a5f3fc">Connecting...</span></span>
+                        <span style="font-size:11px;color:rgba(165,180,252,0.5)" id="lastSyncTime"></span>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-2 md:gap-3">
+                    <div style="text-align:center;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:10px 12px">
+                        <div style="font-size:clamp(13px,2vw,17px);font-weight:800;color:#93c5fd;font-family:Outfit,sans-serif" id="currentMonthReceivable">₹0</div>
+                        <div style="font-size:10px;color:rgba(147,197,253,0.7);margin-top:2px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px">Receivable</div>
+                    </div>
+                    <div style="text-align:center;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:10px 12px">
+                        <div style="font-size:clamp(13px,2vw,17px);font-weight:800;color:#6ee7b7;font-family:Outfit,sans-serif" id="currentMonthReceived">₹0</div>
+                        <div style="font-size:10px;color:rgba(110,231,183,0.7);margin-top:2px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px">This Month</div>
+                    </div>
+                    <div style="text-align:center;background:linear-gradient(135deg,rgba(16,185,129,0.2),rgba(5,150,105,0.15));border:1.5px solid rgba(16,185,129,0.35);border-radius:14px;padding:10px 12px">
+                        <div style="font-size:clamp(13px,2vw,17px);font-weight:800;color:#34d399;font-family:Outfit,sans-serif" id="totalReceivedAllTime">₹0</div>
+                        <div style="font-size:10px;color:rgba(52,211,153,0.75);margin-top:2px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px">Total Received</div>
+                    </div>
+                    <div style="text-align:center;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:10px 12px">
+                        <div style="font-size:clamp(13px,2vw,17px);font-weight:800;color:#fca5a5;font-family:Outfit,sans-serif" id="currentMonthWithdrawn">₹0</div>
+                        <div style="font-size:10px;color:rgba(252,165,165,0.7);margin-top:2px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px">Withdrawn</div>
+                    </div>
+                    <div style="text-align:center;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:10px 12px">
+                        <div style="font-size:clamp(13px,2vw,17px);font-weight:800;color:#c4b5fd;font-family:Outfit,sans-serif" id="currentBalance">₹0</div>
+                        <div style="font-size:10px;color:rgba(196,181,253,0.7);margin-top:2px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px">Balance</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5 mb-6">
+            <div class="hover-lift" style="background:linear-gradient(135deg,#1e40af,#1d4ed8);border-radius:20px;padding:clamp(14px,3vw,22px);border:1px solid rgba(255,255,255,0.15);box-shadow:0 8px 32px rgba(30,64,175,0.4)">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p style="font-size:11px;font-weight:700;color:rgba(147,197,253,0.8);text-transform:uppercase;letter-spacing:0.8px">Members</p>
+                        <p style="font-family:Outfit,sans-serif;font-size:clamp(26px,5vw,38px);font-weight:900;color:white;line-height:1;margin-top:6px" id="totalMembers">0</p>
+                    </div>
+                    <div style="width:clamp(36px,7vw,48px);height:clamp(36px,7vw,48px);background:rgba(255,255,255,0.15);border-radius:14px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,0.2)">
+                        <i class="fas fa-users" style="color:white;font-size:clamp(14px,3vw,20px)"></i>
+                    </div>
+                </div>
+                <button onclick="showAllMembersView()" style="margin-top:14px;font-size:11px;font-weight:700;color:rgba(147,197,253,0.9);background:rgba(255,255,255,0.1);border:none;border-radius:8px;padding:5px 12px;cursor:pointer;letter-spacing:0.3px">View All →</button>
+            </div>
+            <div class="hover-lift" style="background:linear-gradient(135deg,#0e7490,#0891b2);border-radius:20px;padding:clamp(14px,3vw,22px);border:1px solid rgba(255,255,255,0.15);box-shadow:0 8px 32px rgba(14,116,144,0.4)">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p style="font-size:11px;font-weight:700;color:rgba(165,243,252,0.8);text-transform:uppercase;letter-spacing:0.8px">Receivable</p>
+                        <p style="font-family:Outfit,sans-serif;font-size:clamp(18px,4vw,28px);font-weight:900;color:white;line-height:1;margin-top:6px" id="totalReceivable">₹0</p>
+                    </div>
+                    <div style="width:clamp(36px,7vw,48px);height:clamp(36px,7vw,48px);background:rgba(255,255,255,0.15);border-radius:14px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,0.2)">
+                        <i class="fas fa-money-bill-wave" style="color:white;font-size:clamp(14px,3vw,20px)"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="hover-lift" style="background:linear-gradient(135deg,#065f46,#047857);border-radius:20px;padding:clamp(14px,3vw,22px);border:1px solid rgba(255,255,255,0.15);box-shadow:0 8px 32px rgba(6,95,70,0.4)">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p style="font-size:11px;font-weight:700;color:rgba(110,231,183,0.8);text-transform:uppercase;letter-spacing:0.8px">Received</p>
+                        <p style="font-family:Outfit,sans-serif;font-size:clamp(18px,4vw,28px);font-weight:900;color:white;line-height:1;margin-top:6px" id="totalReceived">₹0</p>
+                    </div>
+                    <div style="width:clamp(36px,7vw,48px);height:clamp(36px,7vw,48px);background:rgba(255,255,255,0.15);border-radius:14px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,0.2)">
+                        <i class="fas fa-hand-holding-usd" style="color:white;font-size:clamp(14px,3vw,20px)"></i>
+                    </div>
+                </div>
+                <div style="margin-top:12px;background:rgba(255,255,255,0.15);border-radius:30px;height:5px;overflow:hidden">
+                    <div id="collectionProgress" style="background:linear-gradient(90deg,#6ee7b7,#34d399);height:5px;border-radius:30px;transition:width 0.8s ease;width:0%"></div>
+                </div>
+            </div>
+            <div class="hover-lift" style="background:linear-gradient(135deg,#9f1239,#be123c);border-radius:20px;padding:clamp(14px,3vw,22px);border:1px solid rgba(255,255,255,0.15);box-shadow:0 8px 32px rgba(159,18,57,0.4)">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p style="font-size:11px;font-weight:700;color:rgba(252,165,165,0.8);text-transform:uppercase;letter-spacing:0.8px">Pending</p>
+                        <p style="font-family:Outfit,sans-serif;font-size:clamp(26px,5vw,38px);font-weight:900;color:white;line-height:1;margin-top:6px" id="pendingMembers">0</p>
+                    </div>
+                    <div style="width:clamp(36px,7vw,48px);height:clamp(36px,7vw,48px);background:rgba(255,255,255,0.15);border-radius:14px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,0.2)">
+                        <i class="fas fa-clock" style="color:white;font-size:clamp(14px,3vw,20px)"></i>
+                    </div>
+                </div>
+                <button onclick="showQPM()" class="admin-only" style="margin-top:14px;font-size:11px;font-weight:700;color:rgba(252,165,165,0.9);background:rgba(255,255,255,0.1);border:none;border-radius:8px;padding:5px 12px;cursor:pointer;letter-spacing:0.3px"><i class="fas fa-plus-circle mr-1"></i>Quick Pay</button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 mb-6">
+            <div class="admin-only hover-lift" onclick="showQPM()" style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-radius:20px;padding:20px 14px;border:1.5px solid #86efac;box-shadow:0 4px 16px rgba(0,0,0,0.08);cursor:pointer;animation:pulse-glow 2.5s infinite;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;position:relative;overflow:hidden">
+                <div style="position:absolute;top:-20px;right:-20px;width:60px;height:60px;background:linear-gradient(135deg,#16a34a,#15803d);opacity:0.08;border-radius:50%"></div>
+                <div style="width:50px;height:50px;background:linear-gradient(135deg,#16a34a,#15803d);border-radius:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 6px 16px rgba(0,0,0,0.18)">
+                    <i class="fas fa-rupee-sign" style="color:white;font-size:20px"></i>
+                </div>
+                <span style="font-family:Outfit,sans-serif;font-weight:700;color:#14532d;font-size:12px;line-height:1.3">Add Payment</span>
+            </div>
+            <div class="admin-only hover-lift" onclick="showAddMemberModal()" style="background:linear-gradient(135deg,#eff6ff,#dbeafe);border-radius:20px;padding:20px 14px;border:1.5px solid #93c5fd;box-shadow:0 4px 16px rgba(0,0,0,0.08);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;position:relative;overflow:hidden">
+                <div style="position:absolute;top:-20px;right:-20px;width:60px;height:60px;background:linear-gradient(135deg,#2563eb,#1d4ed8);opacity:0.08;border-radius:50%"></div>
+                <div style="width:50px;height:50px;background:linear-gradient(135deg,#2563eb,#1d4ed8);border-radius:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 6px 16px rgba(0,0,0,0.18)">
+                    <i class="fas fa-user-plus" style="color:white;font-size:20px"></i>
+                </div>
+                <span style="font-family:Outfit,sans-serif;font-weight:700;color:#1e3a5f;font-size:12px;line-height:1.3">Add Member</span>
+            </div>
+            <div class="hover-lift" onclick="showAllMembersView()" style="background:linear-gradient(135deg,#faf5ff,#ede9fe);border-radius:20px;padding:20px 14px;border:1.5px solid #c4b5fd;box-shadow:0 4px 16px rgba(0,0,0,0.08);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;position:relative;overflow:hidden">
+                <div style="position:absolute;top:-20px;right:-20px;width:60px;height:60px;background:linear-gradient(135deg,#7c3aed,#6d28d9);opacity:0.08;border-radius:50%"></div>
+                <div style="width:50px;height:50px;background:linear-gradient(135deg,#7c3aed,#6d28d9);border-radius:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 6px 16px rgba(0,0,0,0.18)">
+                    <i class="fas fa-users" style="color:white;font-size:20px"></i>
+                </div>
+                <span style="font-family:Outfit,sans-serif;font-weight:700;color:#3b0764;font-size:12px;line-height:1.3">All Members</span>
+            </div>
+            <div class="hover-lift" onclick="showPendingPayments()" style="background:linear-gradient(135deg,#fff1f2,#ffe4e6);border-radius:20px;padding:20px 14px;border:1.5px solid #fca5a5;box-shadow:0 4px 16px rgba(0,0,0,0.08);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;position:relative;overflow:hidden">
+                <div style="position:absolute;top:-20px;right:-20px;width:60px;height:60px;background:linear-gradient(135deg,#dc2626,#b91c1c);opacity:0.08;border-radius:50%"></div>
+                <div style="width:50px;height:50px;background:linear-gradient(135deg,#dc2626,#b91c1c);border-radius:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 6px 16px rgba(0,0,0,0.18)">
+                    <i class="fas fa-exclamation-circle" style="color:white;font-size:20px"></i>
+                </div>
+                <span style="font-family:Outfit,sans-serif;font-weight:700;color:#7f1d1d;font-size:12px;line-height:1.3">Pending</span>
+            </div>
+            <div class="hover-lift" onclick="showPaymentReports()" style="background:linear-gradient(135deg,#fff7ed,#ffedd5);border-radius:20px;padding:20px 14px;border:1.5px solid #fed7aa;box-shadow:0 4px 16px rgba(0,0,0,0.08);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;position:relative;overflow:hidden">
+                <div style="position:absolute;top:-20px;right:-20px;width:60px;height:60px;background:linear-gradient(135deg,#ea580c,#c2410c);opacity:0.08;border-radius:50%"></div>
+                <div style="width:50px;height:50px;background:linear-gradient(135deg,#ea580c,#c2410c);border-radius:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 6px 16px rgba(0,0,0,0.18)">
+                    <i class="fas fa-file-invoice-dollar" style="color:white;font-size:20px"></i>
+                </div>
+                <span style="font-family:Outfit,sans-serif;font-weight:700;color:#7c2d12;font-size:12px;line-height:1.3">Payments</span>
+            </div>
+            <div class="hover-lift" onclick="showOtherIncomeReport()" style="background:linear-gradient(135deg,#ecfeff,#cffafe);border-radius:20px;padding:20px 14px;border:1.5px solid #67e8f9;box-shadow:0 4px 16px rgba(0,0,0,0.08);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;position:relative;overflow:hidden">
+                <div style="position:absolute;top:-20px;right:-20px;width:60px;height:60px;background:linear-gradient(135deg,#0891b2,#0e7490);opacity:0.08;border-radius:50%"></div>
+                <div style="width:50px;height:50px;background:linear-gradient(135deg,#0891b2,#0e7490);border-radius:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 6px 16px rgba(0,0,0,0.18)">
+                    <i class="fas fa-wallet" style="color:white;font-size:20px"></i>
+                </div>
+                <span style="font-family:Outfit,sans-serif;font-weight:700;color:#164e63;font-size:12px;line-height:1.3">Other Income</span>
+            </div>
+            <div class="hover-lift" onclick="showBalanceSheet()" style="background:linear-gradient(135deg,#f0fdf4,#d1fae5);border-radius:20px;padding:20px 14px;border:1.5px solid #6ee7b7;box-shadow:0 4px 16px rgba(0,0,0,0.08);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;position:relative;overflow:hidden">
+                <div style="position:absolute;top:-20px;right:-20px;width:60px;height:60px;background:linear-gradient(135deg,#059669,#047857);opacity:0.08;border-radius:50%"></div>
+                <div style="width:50px;height:50px;background:linear-gradient(135deg,#059669,#047857);border-radius:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 6px 16px rgba(0,0,0,0.18)">
+                    <i class="fas fa-balance-scale" style="color:white;font-size:20px"></i>
+                </div>
+                <span style="font-family:Outfit,sans-serif;font-weight:700;color:#064e3b;font-size:12px;line-height:1.3">Balance Sheet</span>
+            </div>
+            <div class="hover-lift" onclick="showMonthlySummaryPDF()" style="background:linear-gradient(135deg,#fff1f2,#ffe4e6);border-radius:20px;padding:20px 14px;border:1.5px solid #fda4af;box-shadow:0 4px 16px rgba(0,0,0,0.08);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;position:relative;overflow:hidden">
+                <div style="position:absolute;top:-20px;right:-20px;width:60px;height:60px;background:linear-gradient(135deg,#e11d48,#be123c);opacity:0.08;border-radius:50%"></div>
+                <div style="width:50px;height:50px;background:linear-gradient(135deg,#e11d48,#be123c);border-radius:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 6px 16px rgba(0,0,0,0.18)">
+                    <i class="fas fa-file-pdf" style="color:white;font-size:20px"></i>
+                </div>
+                <span style="font-family:Outfit,sans-serif;font-weight:700;color:#881337;font-size:12px;line-height:1.3">Monthly PDF</span>
+            </div>
+            <div class="hover-lift" onclick="showWelfareSchemes()" style="background:linear-gradient(135deg,#fdf2f8,#fce7f3);border-radius:20px;padding:20px 14px;border:1.5px solid #f9a8d4;box-shadow:0 4px 16px rgba(0,0,0,0.08);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;position:relative;overflow:hidden">
+                <div style="position:absolute;top:-20px;right:-20px;width:60px;height:60px;background:linear-gradient(135deg,#db2777,#be185d);opacity:0.08;border-radius:50%"></div>
+                <div style="width:50px;height:50px;background:linear-gradient(135deg,#db2777,#be185d);border-radius:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 6px 16px rgba(0,0,0,0.18)">
+                    <i class="fas fa-hand-holding-heart" style="color:white;font-size:20px"></i>
+                </div>
+                <span style="font-family:Outfit,sans-serif;font-weight:700;color:#831843;font-size:12px;line-height:1.3">Welfare</span>
+            </div>
+            <div class="hover-lift" onclick="showMessagingPanel()" style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-radius:20px;padding:20px 14px;border:1.5px solid #86efac;box-shadow:0 4px 16px rgba(0,0,0,0.08);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;position:relative;overflow:hidden">
+                <div style="position:absolute;top:-20px;right:-20px;width:60px;height:60px;background:linear-gradient(135deg,#16a34a,#15803d);opacity:0.08;border-radius:50%"></div>
+                <div style="width:50px;height:50px;background:linear-gradient(135deg,#16a34a,#15803d);border-radius:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 6px 16px rgba(0,0,0,0.18)">
+                    <i class="fab fa-whatsapp" style="color:white;font-size:20px"></i>
+                </div>
+                <span style="font-family:Outfit,sans-serif;font-weight:700;color:#14532d;font-size:12px;line-height:1.3">WhatsApp</span>
+            </div>
+            <div class="admin-only hover-lift" onclick="showMainAccountWithdrawalModal()" style="background:linear-gradient(135deg,#fffbeb,#fef3c7);border-radius:20px;padding:20px 14px;border:1.5px solid #fcd34d;box-shadow:0 4px 16px rgba(0,0,0,0.08);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;position:relative;overflow:hidden">
+                <div style="position:absolute;top:-20px;right:-20px;width:60px;height:60px;background:linear-gradient(135deg,#d97706,#b45309);opacity:0.08;border-radius:50%"></div>
+                <div style="width:50px;height:50px;background:linear-gradient(135deg,#d97706,#b45309);border-radius:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 6px 16px rgba(0,0,0,0.18)">
+                    <i class="fas fa-university" style="color:white;font-size:20px"></i>
+                </div>
+                <span style="font-family:Outfit,sans-serif;font-weight:700;color:#78350f;font-size:12px;line-height:1.3">Withdrawal</span>
+            </div>
+            <div class="hover-lift" onclick="showWithdrawalReports()" style="background:linear-gradient(135deg,#faf5ff,#ede9fe);border-radius:20px;padding:20px 14px;border:1.5px solid #d8b4fe;box-shadow:0 4px 16px rgba(0,0,0,0.08);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;position:relative;overflow:hidden">
+                <div style="position:absolute;top:-20px;right:-20px;width:60px;height:60px;background:linear-gradient(135deg,#9333ea,#7e22ce);opacity:0.08;border-radius:50%"></div>
+                <div style="width:50px;height:50px;background:linear-gradient(135deg,#9333ea,#7e22ce);border-radius:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 6px 16px rgba(0,0,0,0.18)">
+                    <i class="fas fa-file-invoice" style="color:white;font-size:20px"></i>
+                </div>
+                <span style="font-family:Outfit,sans-serif;font-weight:700;color:#3b0764;font-size:12px;line-height:1.3">W. Reports</span>
+            </div>
+            <div class="hover-lift" onclick="showExcelExportOptions()" style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-radius:20px;padding:20px 14px;border:1.5px solid #86efac;box-shadow:0 4px 16px rgba(0,0,0,0.08);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;position:relative;overflow:hidden">
+                <div style="position:absolute;top:-20px;right:-20px;width:60px;height:60px;background:linear-gradient(135deg,#15803d,#166534);opacity:0.08;border-radius:50%"></div>
+                <div style="width:50px;height:50px;background:linear-gradient(135deg,#15803d,#166534);border-radius:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 6px 16px rgba(0,0,0,0.18)">
+                    <i class="fas fa-file-excel" style="color:white;font-size:20px"></i>
+                </div>
+                <span style="font-family:Outfit,sans-serif;font-weight:700;color:#14532d;font-size:12px;line-height:1.3">Export</span>
+            </div>
+            <div class="admin-only hover-lift" onclick="showBulkImportModal()" style="background:linear-gradient(135deg,#eef2ff,#e0e7ff);border-radius:20px;padding:20px 14px;border:1.5px solid #a5b4fc;box-shadow:0 4px 16px rgba(0,0,0,0.08);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;position:relative;overflow:hidden">
+                <div style="position:absolute;top:-20px;right:-20px;width:60px;height:60px;background:linear-gradient(135deg,#4338ca,#3730a3);opacity:0.08;border-radius:50%"></div>
+                <div style="width:50px;height:50px;background:linear-gradient(135deg,#4338ca,#3730a3);border-radius:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 6px 16px rgba(0,0,0,0.18)">
+                    <i class="fas fa-file-upload" style="color:white;font-size:20px"></i>
+                </div>
+                <span style="font-family:Outfit,sans-serif;font-weight:700;color:#1e1b4b;font-size:12px;line-height:1.3">Bulk Import</span>
+            </div>
+            <div class="hover-lift" onclick="showParkedMembers()" style="background:linear-gradient(135deg,#f8fafc,#f1f5f9);border-radius:20px;padding:20px 14px;border:1.5px solid #cbd5e1;box-shadow:0 4px 16px rgba(0,0,0,0.08);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;position:relative;overflow:hidden">
+                <div style="position:absolute;top:-20px;right:-20px;width:60px;height:60px;background:linear-gradient(135deg,#475569,#334155);opacity:0.08;border-radius:50%"></div>
+                <div style="width:50px;height:50px;background:linear-gradient(135deg,#475569,#334155);border-radius:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 6px 16px rgba(0,0,0,0.18)">
+                    <i class="fas fa-parking" style="color:white;font-size:20px"></i>
+                </div>
+                <span style="font-family:Outfit,sans-serif;font-weight:700;color:#0f172a;font-size:12px;line-height:1.3">Parked</span>
+            </div>
+            <div class="hover-lift" onclick="showRetiredMembersDetails()" style="background:linear-gradient(135deg,#fff7ed,#ffedd5);border-radius:20px;padding:20px 14px;border:1.5px solid #fed7aa;box-shadow:0 4px 16px rgba(0,0,0,0.08);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;position:relative;overflow:hidden">
+                <div style="position:absolute;top:-20px;right:-20px;width:60px;height:60px;background:linear-gradient(135deg,#c2410c,#9a3412);opacity:0.08;border-radius:50%"></div>
+                <div style="width:50px;height:50px;background:linear-gradient(135deg,#c2410c,#9a3412);border-radius:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 6px 16px rgba(0,0,0,0.18)">
+                    <i class="fas fa-user-clock" style="color:white;font-size:20px"></i>
+                </div>
+                <span style="font-family:Outfit,sans-serif;font-weight:700;color:#7c2d12;font-size:12px;line-height:1.3">Retired</span>
+            </div>
+            <div class="hover-lift" onclick="showTransferredMembers()" style="background:linear-gradient(135deg,#faf5ff,#ede9fe);border-radius:20px;padding:20px 14px;border:1.5px solid #c4b5fd;box-shadow:0 4px 16px rgba(0,0,0,0.08);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;position:relative;overflow:hidden">
+                <div style="position:absolute;top:-20px;right:-20px;width:60px;height:60px;background:linear-gradient(135deg,#6d28d9,#5b21b6);opacity:0.08;border-radius:50%"></div>
+                <div style="width:50px;height:50px;background:linear-gradient(135deg,#6d28d9,#5b21b6);border-radius:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 6px 16px rgba(0,0,0,0.18)">
+                    <i class="fas fa-exchange-alt" style="color:white;font-size:20px"></i>
+                </div>
+                <span style="font-family:Outfit,sans-serif;font-weight:700;color:#3b0764;font-size:12px;line-height:1.3">Transferred</span>
+            </div>
+            <div class="hover-lift" onclick="showPaymentQRModal()" style="background:linear-gradient(135deg,#f5f3ff,#ede9fe);border-radius:20px;padding:20px 14px;border:1.5px solid #c4b5fd;box-shadow:0 4px 16px rgba(0,0,0,0.08);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;position:relative;overflow:hidden">
+                <div style="position:absolute;top:-20px;right:-20px;width:60px;height:60px;background:linear-gradient(135deg,#7c3aed,#6d28d9);opacity:0.08;border-radius:50%"></div>
+                <div style="width:50px;height:50px;background:linear-gradient(135deg,#7c3aed,#6d28d9);border-radius:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 6px 16px rgba(0,0,0,0.18)">
+                    <i class="fas fa-qrcode" style="color:white;font-size:20px"></i>
+                </div>
+                <span style="font-family:Outfit,sans-serif;font-weight:700;color:#3b0764;font-size:12px;line-height:1.3">Pay via QR</span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-8">
+            <div style="background:rgba(255,255,255,0.95);border-radius:22px;padding:22px;border:1px solid rgba(255,255,255,0.6);box-shadow:0 8px 40px rgba(0,0,0,0.12)"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><h3 style="font-family:Outfit,sans-serif;font-weight:800;color:#1e293b;font-size:15px;display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;background:#10b981;border-radius:50%;display:inline-block"></span>Recent Payments</h3><button onclick="showPaymentReports()" style="font-size:12px;font-weight:700;color:#4f46e5;background:#eef2ff;border:none;border-radius:8px;padding:5px 12px;cursor:pointer">All →</button></div><div class="space-y-3 max-h-60 overflow-y-auto" id="recentPayments"><div class="text-center py-4 text-gray-400"><div class="spinner"></div></div></div></div>
+            <div style="background:rgba(255,255,255,0.95);border-radius:22px;padding:22px;border:1px solid rgba(255,255,255,0.6);box-shadow:0 8px 40px rgba(0,0,0,0.12)"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><h3 style="font-family:Outfit,sans-serif;font-weight:800;color:#1e293b;font-size:15px;display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;background:#f43f5e;border-radius:50%;display:inline-block"></span>Recent Withdrawals</h3><button onclick="showWithdrawalReports()" style="font-size:12px;font-weight:700;color:#e11d48;background:#fff1f2;border:none;border-radius:8px;padding:5px 12px;cursor:pointer">All →</button></div><div class="space-y-3 max-h-60 overflow-y-auto" id="recentWithdrawals"><div class="text-center py-4 text-gray-400"><div class="spinner"></div></div></div></div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-8">
+            <div style="background:rgba(255,255,255,0.95);border-radius:22px;padding:22px;border:1px solid rgba(255,255,255,0.6);box-shadow:0 8px 40px rgba(0,0,0,0.12)"><h3 style="font-family:Outfit,sans-serif;font-weight:800;color:#1e293b;font-size:15px;margin-bottom:16px;display:flex;align-items:center;gap:8px"><i class="fas fa-briefcase" style="color:#4f46e5"></i>Designations</h3><div class="space-y-3">
+                <div class="flex justify-between items-center p-3 bg-blue-50 rounded-lg"><div class="flex items-center gap-2"><div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center"><i class="fas fa-user-tie text-blue-600 text-sm"></i></div><p class="font-semibold text-blue-800 text-sm">Assistant/PA</p></div><span class="font-bold text-lg text-blue-600" id="assistantCount">0</span></div>
+                <div class="flex justify-between items-center p-3 bg-green-50 rounded-lg"><div class="flex items-center gap-2"><div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center"><i class="fas fa-calculator text-green-600 text-sm"></i></div><p class="font-semibold text-green-800 text-sm">Accountant/Auditor</p></div><span class="font-bold text-lg text-green-600" id="accountantCount">0</span></div>
+                <div class="flex justify-between items-center p-3 bg-purple-50 rounded-lg"><div class="flex items-center gap-2"><div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center"><i class="fas fa-keyboard text-purple-600 text-sm"></i></div><p class="font-semibold text-purple-800 text-sm">Clerk/Steno/DEO</p></div><span class="font-bold text-lg text-purple-600" id="clerkCount">0</span></div>
+                <div class="flex justify-between items-center p-3 bg-orange-50 rounded-lg"><div class="flex items-center gap-2"><div class="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center"><i class="fas fa-hands-helping text-orange-600 text-sm"></i></div><p class="font-semibold text-orange-800 text-sm">Peon/Driver/Helper</p></div><span class="font-bold text-lg text-orange-600" id="peonCount">0</span></div>
+                <div class="flex justify-between items-center p-3 bg-indigo-50 rounded-lg"><div class="flex items-center gap-2"><div class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center"><i class="fas fa-exchange-alt text-indigo-600 text-sm"></i></div><p class="font-semibold text-indigo-800 text-sm">Transferred</p></div><span class="font-bold text-lg text-indigo-600" id="transferredCount">0</span></div>
+            </div></div>
+            <div style="background:rgba(255,255,255,0.95);border-radius:22px;padding:22px;border:1px solid rgba(255,255,255,0.6);box-shadow:0 8px 40px rgba(0,0,0,0.12)"><h3 style="font-family:Outfit,sans-serif;font-weight:800;color:#1e293b;font-size:15px;margin-bottom:16px;display:flex;align-items:center;gap:8px"><i class="fas fa-chart-pie" style="color:#f59e0b"></i>Statistics</h3><div class="space-y-4">
+                <div><div class="flex justify-between mb-2"><span class="text-gray-700 text-sm">Collection</span><span class="font-bold text-sm" id="monthlyPotential">₹0</span></div><div class="w-full bg-gray-200 rounded-full h-3"><div id="monthlyProgress" class="bg-green-500 h-3 rounded-full transition-all" style="width:0%"></div></div></div>
+                <div><div class="flex justify-between mb-2"><span class="text-gray-700 text-sm">Retirement</span><span class="font-bold text-sm" id="retirementStatus">0</span></div>
+                <div class="grid grid-cols-4 gap-2 text-center text-xs">
+                    <div class="bg-green-100 text-green-800 p-2 rounded cursor-pointer hover:bg-green-200" onclick="showAllMembersView()"><div class="font-bold" id="activeCount">0</div><div>Active</div></div>
+                    <div class="bg-yellow-100 text-yellow-800 p-2 rounded cursor-pointer hover:bg-yellow-200" onclick="showRetiringSoon()"><div class="font-bold" id="retiringSoonCount">0</div><div>Soon</div></div>
+                    <div class="bg-red-100 text-red-800 p-2 rounded cursor-pointer hover:bg-red-200" onclick="showRetiredMembersDetails()"><div class="font-bold" id="retiredCount">0</div><div>Retired</div></div>
+                    <div class="bg-indigo-100 text-indigo-800 p-2 rounded cursor-pointer hover:bg-indigo-200" onclick="showTransferredMembers()"><div class="font-bold" id="transferredStatCount">0</div><div>Transfer</div></div>
+                </div></div>
+                <div class="bg-blue-50 p-4 rounded-lg"><h4 class="font-semibold text-blue-800 mb-2 text-sm">System</h4><div class="grid grid-cols-2 gap-2 text-xs"><div class="flex justify-between"><span>Total:</span><span class="font-semibold" id="totalMembersCount">0</span></div><div class="flex justify-between"><span>Fee:</span><span class="font-semibold">₹100</span></div><div class="flex justify-between"><span>Phone:</span><span class="font-semibold" id="withPhoneCount">0</span></div><div class="flex justify-between"><span>Sync:</span><span class="font-semibold" id="lastUpdated">...</span></div></div></div>
+            </div></div>
+        </div>
+    </main>
+
+    <footer style="background:linear-gradient(135deg,rgba(15,28,63,0.98),rgba(10,15,40,0.98));border-top:1px solid rgba(255,255,255,0.06);padding:28px 0;margin-top:40px">
+        <div class="container mx-auto px-4 text-center">
+            <div id="footerLogoBox" class="mb-3 hidden"><img id="footerLogoImg" style="width:52px;height:52px;object-fit:contain;border-radius:14px;margin:0 auto;border:2px solid rgba(245,158,11,0.3)" alt="Logo"></div>
+            <div style="width:36px;height:3px;background:linear-gradient(90deg,#4f46e5,#f59e0b);border-radius:3px;margin:0 auto 12px"></div>
+            <h3 style="font-family:Outfit,sans-serif;font-size:16px;font-weight:800;color:white;letter-spacing:-0.2px">DGST Welfare Society</h3>
+            <p style="font-size:11px;color:rgba(148,163,184,0.7);margin-top:6px">DGST Office, Second Floor, 30 Bays Building, Sector 17, Chandigarh</p>
+            <p style="font-size:11px;color:rgba(148,163,184,0.4);margin-top:4px">v5.2 &nbsp;·&nbsp; <span id="currentMonthYearFooter">...</span></p>
+        </div>
+    </footer>
+</div>
+
+<div id="modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 md:p-4">
+    <div class="bg-white rounded-2xl w-full max-w-6xl max-h-[95vh] overflow-hidden fade-in">
+        <div class="p-4 md:p-5 border-b flex justify-between items-center bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+            <h3 class="text-lg md:text-xl font-bold" id="modalTitle">Modal</h3>
+            <button onclick="closeModal()" class="text-white hover:text-gray-200 text-2xl"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="p-4 md:p-6 overflow-y-auto max-h-[calc(95vh-70px)]" id="modalContent"></div>
+    </div>
+</div>
+
+<div id="toast" class="hidden fixed bottom-4 right-4 bg-gray-800 text-white px-5 py-3 rounded-xl shadow-lg z-50 max-w-sm">
+    <div class="flex items-center gap-3"><i class="fas fa-check-circle text-green-400" id="toastIcon"></i><div><p class="font-semibold text-sm" id="toastTitle">Success</p><p class="text-xs text-gray-300" id="toastMessage">Done</p></div></div>
+</div>
+
+<script>
+const CONFIG={SUPABASE_URL:'https://iicfepqovppewcfrvhci.supabase.co',SUPABASE_ANON_KEY:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlpY2ZlcHFvdnBwZXdjZnJ2aGNpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExNjAwMDUsImV4cCI6MjA4NjczNjAwNX0.CVtAC7M7VXQFdWzfe72x2E0xwvi6Hvklbue83xJkQPM',SOCIETY_NAME:'DGST Welfare Society',SOCIETY_ADDRESS:'DGST Office, Second Floor, 30 Bays Building',SOCIETY_CITY:'Sector 17, Chandigarh',SOCIETY_SEAL:'OFFICIAL SEAL',MONTHLY_CONTRIBUTION:100,VERSION:'5.2',SESSION_DURATION:24,AUTO_REFRESH:30000,AUTO_WHATSAPP:true,REMINDER_DATES:[1,5,10,15,20,25],WELFARE_SCHEMES:{RETIREMENT_HONOR:{name:'सेवानिवृत्ति सम्मान',description:'सदस्य की सेवानिवृत्ति पर सम्मान समारोह।',icon:'fa-user-tie',color:'blue'},SON_MARRIAGE:{name:'पुत्र विवाह सहायता',description:'पुत्र विवाह पर ₹3,100/-',amount:3100,icon:'fa-male',color:'green'},DAUGHTER_MARRIAGE:{name:'पुत्री विवाह सहायता',description:'पुत्री विवाह पर ₹5,100/-',amount:5100,icon:'fa-female',color:'pink'},CONDOLENCE:{name:'शोक सहायता',description:'असामयिक निधन पर ₹11,000/-',amount:11000,icon:'fa-hands-helping',color:'purple'},TRANSFER_MEMENTO:{name:'स्थानांतरण स्मृति चिन्ह',description:'स्थानांतरण पर स्मृति चिन्ह एवं सफारी सूट।',icon:'fa-gift',color:'orange'}}};
+
+function fmt(a){return'₹'+Number(a||0).toLocaleString('en-IN')}function fmtD(d){if(!d)return'-';try{return new Date(d).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})}catch(e){return d}}function getCMY(){const n=new Date();return n.toLocaleString('default',{month:'long'})+' '+n.getFullYear()}function getYM(){return new Date().toISOString().substring(0,7)}function getTS(){return new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true})}function isMob(){return/Android|iPhone|iPad/i.test(navigator.userAgent)||window.innerWidth<=768}function DR(l,v){return'<div class="flex justify-between py-1"><span class="text-gray-600">'+l+':</span><span class="font-semibold">'+v+'</span></div>'}function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}function n2w(n){const o=['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'];const t=['','','Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];n=Math.abs(Math.floor(n));if(n===0)return'Zero';if(n<20)return o[n];if(n<100)return t[Math.floor(n/10)]+(n%10?' '+o[n%10]:'');if(n<1000)return o[Math.floor(n/100)]+' Hundred'+(n%100?' and '+n2w(n%100):'');if(n<100000)return n2w(Math.floor(n/1000))+' Thousand'+(n%1000?' '+n2w(n%1000):'');if(n<10000000)return n2w(Math.floor(n/100000))+' Lakh'+(n%100000?' '+n2w(n%100000):'');return n2w(Math.floor(n/10000000))+' Crore'+(n%10000000?' '+n2w(n%10000000):'')}
+function showToast(t,m,type='success'){const im={success:'fa-check-circle text-green-400',error:'fa-exclamation-circle text-red-400',warning:'fa-exclamation-triangle text-yellow-400',info:'fa-info-circle text-blue-400'};document.getElementById('toastIcon').className='fas '+(im[type]||im.success);document.getElementById('toastTitle').textContent=t;document.getElementById('toastMessage').textContent=m;const to=document.getElementById('toast');to.classList.remove('hidden');clearTimeout(window._tt);window._tt=setTimeout(()=>to.classList.add('hidden'),4000)}
+function showModal(t,c){document.getElementById('modalTitle').textContent=t;document.getElementById('modalContent').innerHTML=c;document.getElementById('modal').classList.remove('hidden');document.body.style.overflow='hidden'}
+function closeModal(){document.getElementById('modal').classList.add('hidden');document.body.style.overflow='auto'}
+
+let supa=null,_rc=Date.now();
+function initSupa(){try{supa=supabase.createClient(CONFIG.SUPABASE_URL,CONFIG.SUPABASE_ANON_KEY);return true}catch(e){return false}}
+
+// =============================================
+// SECURITY: SHA-256 Password Hashing
+// =============================================
+async function hashPwd(p){
+  const enc=new TextEncoder();
+  const buf=await crypto.subtle.digest('SHA-256',enc.encode(p));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+// =============================================
+// SECURITY: Login Rate Limiter (max 5 attempts / 15 min)
+// =============================================
+const _loginAttempts={count:0,ts:Date.now()};
+function loginAllowed(){
+  const now=Date.now();
+  if(now-_loginAttempts.ts>15*60*1000){_loginAttempts.count=0;_loginAttempts.ts=now}
+  _loginAttempts.count++;
+  return _loginAttempts.count<=5;
+}
+function loginCooldownMsg(){
+  const wait=Math.ceil((15*60*1000-(Date.now()-_loginAttempts.ts))/60000);
+  return 'Bahut zyada galat attempts! '+wait+' minute baad try karo.';
+}
+function genR(t){_rc++;return(t==='payment'?'PAY':t==='withdrawal'?'WDR':'INC')+'-'+new Date().getFullYear()+'-'+String(_rc).slice(-6)}
+function monthsB(s,e){const a=new Date(s),b=new Date(e);return Math.max(0,(b.getFullYear()-a.getFullYear())*12+(b.getMonth()-a.getMonth())+1)}
+function calcFin(m,ps){const mp=ps.filter(p=>p.member_id===m.id);const tp=mp.reduce((s,p)=>s+Number(p.amount||0),0);let md=0;if(m.status==='active')md=monthsB(m.join_date,new Date().toISOString().split('T')[0]);else if(m.retirement_date)md=monthsB(m.join_date,m.retirement_date);else md=monthsB(m.join_date,new Date().toISOString().split('T')[0]);const tr=md*CONFIG.MONTHLY_CONTRIBUTION;return{...m,total_months_due:md,total_receivable:tr,total_paid:tp,total_pending:tr-tp}}
+
+const DB={
+async gM(f={}){try{let q=supa.from('members').select('*').neq('status','deleted').order('id');if(f.status)q=q.eq('status',f.status);const{data,error}=await q;if(error)throw error;return data||[]}catch(e){return[]}},
+async gM1(id){const{data,error}=await supa.from('members').select('*').eq('id',id).single();if(error)throw error;return data},
+async aM(m){const{data,error}=await supa.from('members').insert({...m,created_at:new Date().toISOString(),updated_at:new Date().toISOString()}).select().single();if(error)throw error;return data},
+async uM(id,u){const{data,error}=await supa.from('members').update({...u,updated_at:new Date().toISOString()}).eq('id',id).select().single();if(error)throw error;return data},
+async dM(id){return this.uM(id,{status:'deleted'})},
+async gP(f={}){try{let q=supa.from('payments').select('*, members(name, designation, phone, payee_code)').order('created_at',{ascending:false});if(f.mid)q=q.eq('member_id',f.mid);if(f.limit)q=q.limit(f.limit);const{data,error}=await q;if(error)throw error;return data||[]}catch(e){return[]}},
+async aP(p){const rn=genR('payment');const{data,error}=await supa.from('payments').insert({...p,receipt_no:rn,month_year:getCMY(),created_at:new Date().toISOString()}).select('*, members(name, designation, phone, payee_code)').single();if(error)throw error;return data},
+async gW(f={}){try{let q=supa.from('withdrawals').select('*').order('created_at',{ascending:false});if(f.limit)q=q.limit(f.limit);const{data,error}=await q;if(error)throw error;return data||[]}catch(e){return[]}},
+async aW(w){const rn=genR('withdrawal');const{data,error}=await supa.from('withdrawals').insert({...w,receipt_no:rn,month_year:getCMY(),created_at:new Date().toISOString()}).select().single();if(error)throw error;return data},
+async gOI(){try{const{data,error}=await supa.from('other_income').select('*').order('created_at',{ascending:false});if(!error&&data)return data}catch(e){}try{const{data}=await supa.from('withdrawals').select('*').lt('amount',0).order('created_at',{ascending:false});return(data||[]).map(d=>({...d,source_name:(d.purpose||'').replace('[INCOME] ','').split(':')[0],amount:Math.abs(d.amount),income_date:d.withdrawal_date}))}catch(e){return[]}},
+async aOI(d){try{const rn=genR('income');const{data,error}=await supa.from('other_income').insert({...d,receipt_no:rn,month_year:getCMY(),recorded_by:d.recorded_by||'admin',created_at:new Date().toISOString()}).select().single();if(!error)return data}catch(e){}const rn=genR('income');const{data,error}=await supa.from('withdrawals').insert({amount:-(Math.abs(d.amount)),withdrawal_date:d.income_date||new Date().toISOString().split('T')[0],purpose:'[INCOME] '+(d.source_name||'')+': '+(d.purpose||''),category:'Other Income',approved_by:d.recorded_by||'admin',remarks:d.remarks||'',receipt_no:rn,month_year:getCMY(),created_at:new Date().toISOString()}).select().single();if(error)throw error;return data},
+async gFin(){const[ms,ps]=await Promise.all([this.gM(),this.gP({})]);return ms.map(m=>calcFin(m,ps))},
+async gFin1(id){const[m,ps]=await Promise.all([this.gM1(id),this.gP({mid:id})]);return calcFin(m,ps)},
+async gBal(){const[ps,ws,oi]=await Promise.all([this.gP({}),this.gW({}),this.gOI()]);return ps.reduce((s,p)=>s+Number(p.amount||0),0)+oi.reduce((s,i)=>s+Number(i.amount||0),0)-ws.filter(w=>Number(w.amount)>0).reduce((s,w)=>s+Number(w.amount||0),0)},
+async login(u,p){
+  const ph=await hashPwd(p);
+  // Check localStorage hashed password
+  const savedHash=localStorage.getItem('dgst_hash_'+u);
+  if(savedHash){if(savedHash===ph)return{id:u==='admin'?1:2,username:u,display_name:u==='admin'?'Administrator':'Viewer',role:u};throw new Error('Invalid')}
+  // Check Supabase
+  try{const{data,error}=await supa.from('admin_users').select('*').eq('username',u).eq('password_hash',ph).eq('is_active',true).single();if(error)throw error;supa.from('admin_users').update({last_login:new Date().toISOString()}).eq('id',data.id).then(()=>{});return data}catch(e){throw new Error('Invalid')}
+},
+async isFirstRun(){
+  // Only check localStorage — if no hashed password saved locally, show setup
+  return !localStorage.getItem('dgst_hash_admin');
+},
+async uPwd(u,p){
+  const ph=await hashPwd(p);
+  // Store hashed (not plain text) in localStorage
+  localStorage.removeItem('dgst_pwd_'+u); // remove old plain text if exists
+  localStorage.setItem('dgst_hash_'+u,ph);
+  try{const{data,error}=await supa.from('admin_users').upsert({username:u,password_hash:ph,role:u==='admin'?'admin':'viewer',is_active:true,display_name:u==='admin'?'Administrator':'Viewer'},{onConflict:'username'}).select().single();if(!error)return data;const{data:d2}=await supa.from('admin_users').update({password_hash:ph}).eq('username',u).select().single();return d2||{username:u}}catch(e){return{username:u,password_hash:ph}}
+},
+async log(u,a){try{await supa.from('activity_log').insert({username:u,action:a,created_at:new Date().toISOString()})}catch(e){}},
+async gLog(n=200){try{const{data,error}=await supa.from('activity_log').select('*').order('created_at',{ascending:false}).limit(n);return data||[]}catch(e){return[]}},
+async gSet(k){try{const{data}=await supa.from('app_settings').select('value').eq('key',k).single();return data?.value||null}catch(e){return localStorage.getItem('dgst_'+k)||null}},
+async sSet(k,v){try{await supa.from('app_settings').upsert({key:k,value:v,updated_at:new Date().toISOString()},{onConflict:'key'})}catch(e){}localStorage.setItem('dgst_'+k,v)}
+};
+
+// AUTH
+let cUser=null,cRole=null;
+function isA(){return cRole==='admin'}
+// =============================================
+// FIRST TIME SETUP SCREEN
+// =============================================
+function showFirstTimeSetup(){
+  document.getElementById('loginScreen').innerHTML=`
+  <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(160deg,#0f1c3f,#162447,#1a1f4e)">
+  <div style="width:100%;max-width:440px;animation:fadeIn 0.6s both">
+    <div style="background:rgba(255,255,255,0.06);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.12);border-radius:28px;padding:36px 32px;box-shadow:0 30px 80px rgba(0,0,0,0.5)">
+      <div style="text-align:center;margin-bottom:24px">
+        <div style="width:72px;height:72px;background:linear-gradient(135deg,rgba(245,158,11,0.3),rgba(245,158,11,0.1));border:2px solid rgba(245,158,11,0.5);border-radius:22px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px">
+          <i class="fas fa-shield-alt" style="color:#f59e0b;font-size:30px"></i>
+        </div>
+        <h1 style="font-family:Outfit,sans-serif;font-size:22px;font-weight:900;color:white">Pehli Baar Setup</h1>
+        <p style="font-size:13px;color:rgba(165,180,252,0.8);margin-top:6px">Admin aur Viewer ka password set karo</p>
+        <div style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);border-radius:12px;padding:10px 14px;margin-top:12px;font-size:12px;color:#fcd34d;text-align:left">
+          <i class="fas fa-info-circle mr-1"></i> Yeh screen sirf pehli baar dikhti hai. Password yaad rakhna zaroori hai!
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div>
+          <label style="display:block;font-size:11px;font-weight:700;color:rgba(165,180,252,0.8);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.8px">🔑 Admin Password (min 8 chars)</label>
+          <input type="password" id="setupAdminPwd" style="width:100%;padding:13px 16px;background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.12);border-radius:13px;color:white;font-size:14px;font-family:Plus Jakarta Sans,sans-serif;outline:none;box-sizing:border-box" placeholder="Admin ka password daalo">
+          <input type="password" id="setupAdminPwd2" style="width:100%;padding:13px 16px;background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.12);border-radius:13px;color:white;font-size:14px;font-family:Plus Jakarta Sans,sans-serif;outline:none;margin-top:8px;box-sizing:border-box" placeholder="Dobara confirm karo">
+        </div>
+        <div>
+          <label style="display:block;font-size:11px;font-weight:700;color:rgba(165,180,252,0.8);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.8px">👁️ Viewer Password (min 8 chars)</label>
+          <input type="password" id="setupViewerPwd" style="width:100%;padding:13px 16px;background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.12);border-radius:13px;color:white;font-size:14px;font-family:Plus Jakarta Sans,sans-serif;outline:none;box-sizing:border-box" placeholder="Viewer ka password daalo">
+          <input type="password" id="setupViewerPwd2" style="width:100%;padding:13px 16px;background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.12);border-radius:13px;color:white;font-size:14px;font-family:Plus Jakarta Sans,sans-serif;outline:none;margin-top:8px;box-sizing:border-box" placeholder="Dobara confirm karo">
+        </div>
+        <div id="setupErr" style="display:none;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);border-radius:12px;padding:12px;font-size:13px;color:#fca5a5">
+          <i class="fas fa-exclamation-circle mr-1"></i><span id="setupErrMsg"></span>
+        </div>
+        <button onclick="doFirstTimeSetup()" id="setupBtn" style="width:100%;padding:14px;background:linear-gradient(135deg,#059669,#047857);border:none;border-radius:14px;color:white;font-size:15px;font-weight:800;cursor:pointer;box-shadow:0 6px 24px rgba(5,150,105,0.4);font-family:Outfit,sans-serif;transition:all 0.2s">
+          <i class="fas fa-lock mr-2"></i>Passwords Set Karo & Login Karo
+        </button>
+      </div>
+    </div>
+  </div>
+  </div>`;
+  document.getElementById('loginScreen').classList.remove('hidden');
+  document.getElementById('app').classList.add('hidden');
+}
+
+async function doFirstTimeSetup(){
+  const ap=document.getElementById('setupAdminPwd').value;
+  const ap2=document.getElementById('setupAdminPwd2').value;
+  const vp=document.getElementById('setupViewerPwd').value;
+  const vp2=document.getElementById('setupViewerPwd2').value;
+  const errEl=document.getElementById('setupErr');
+  const errMsg=document.getElementById('setupErrMsg');
+  const showErr=(m)=>{errMsg.textContent=m;errEl.style.display='block'};
+  errEl.style.display='none';
+  if(!ap||!vp){showErr('Dono passwords daalna zaroori hai!');return}
+  if(ap.length<8){showErr('Admin password min 8 characters ka hona chahiye!');return}
+  if(vp.length<8){showErr('Viewer password min 8 characters ka hona chahiye!');return}
+  if(ap!==ap2){showErr('Admin passwords match nahi karte!');return}
+  if(vp!==vp2){showErr('Viewer passwords match nahi karte!');return}
+  if(ap===vp){showErr('Admin aur Viewer ka password alag rakhna chahiye!');return}
+  const btn=document.getElementById('setupBtn');
+  btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin mr-2"></i>Setting up...';
+  try{
+    await DB.uPwd('admin',ap);
+    await DB.uPwd('viewer',vp);
+    DB.log('System','FirstTimeSetup');
+    // Auto login as admin
+    cUser='Administrator';cRole='admin';
+    sessionStorage.setItem('dgst_s',JSON.stringify({u:cUser,r:cRole,t:Date.now()}));
+    loadApp();
+  }catch(e){
+    showErr('Kuch galat hua, dobara try karo.');
+    btn.disabled=false;btn.innerHTML='<i class="fas fa-lock mr-2"></i>Passwords Set Karo & Login Karo';
+  }
+}
+
+function showLogin(){document.getElementById('loginScreen').innerHTML=`<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;position:relative;overflow:hidden"><div style="position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 20% 0%,rgba(99,102,241,0.3) 0%,transparent 60%),radial-gradient(ellipse 60% 50% at 80% 100%,rgba(245,158,11,0.18) 0%,transparent 50%),linear-gradient(160deg,#0f1c3f,#162447,#1a1f4e);z-index:0"></div><div style="position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,0.025) 1px,transparent 1px);background-size:32px 32px;z-index:0"></div><div style="position:relative;z-index:1;width:100%;max-width:420px;animation:fadeIn 0.6s cubic-bezier(0.16,1,0.3,1) both"><div style="background:rgba(255,255,255,0.05);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.1);border-radius:28px;padding:36px 32px;box-shadow:0 30px 80px rgba(0,0,0,0.5)"><div style="text-align:center;margin-bottom:28px"><div style="width:76px;height:76px;background:linear-gradient(135deg,rgba(245,158,11,0.25),rgba(245,158,11,0.1));border:2px solid rgba(245,158,11,0.4);border-radius:22px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;overflow:hidden;position:relative" id="loginLogoBox"><i class="fas fa-building" id="loginLogoIcon" style="color:#f59e0b;font-size:32px"></i><img id="loginLogoImg" class="hidden" style="width:100%;height:100%;object-fit:cover;border-radius:20px" alt="Logo"></div><h1 style="font-family:Outfit,sans-serif;font-size:22px;font-weight:900;color:white;letter-spacing:-0.4px">${CONFIG.SOCIETY_NAME}</h1><p style="font-size:12px;color:rgba(165,180,252,0.7);margin-top:4px;font-weight:500">Monthly Tracking System</p><p style="font-size:11px;color:rgba(148,163,184,0.5);margin-top:2px">${CONFIG.SOCIETY_ADDRESS}, ${CONFIG.SOCIETY_CITY}</p></div><form onsubmit="doLogin(event)" style="display:flex;flex-direction:column;gap:14px"><div><label style="display:block;font-size:12px;font-weight:700;color:rgba(165,180,252,0.8);margin-bottom:7px;text-transform:uppercase;letter-spacing:0.8px">Select Role</label><select id="loginRole" required style="width:100%;padding:13px 16px;background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.12);border-radius:13px;color:white;font-size:14px;font-weight:600;font-family:Plus Jakarta Sans,sans-serif;outline:none;cursor:pointer;transition:border-color 0.2s" onfocus="this.style.borderColor='rgba(245,158,11,0.6)'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'"><option value="" style="background:#1e3a5f;color:white">-- Select --</option><option value="admin" style="background:#1e3a5f;color:white">🔑 Administrator</option><option value="viewer" style="background:#1e3a5f;color:white">👁️ Viewer</option></select></div><div><label style="display:block;font-size:12px;font-weight:700;color:rgba(165,180,252,0.8);margin-bottom:7px;text-transform:uppercase;letter-spacing:0.8px">Password</label><div style="position:relative"><input type="password" id="loginPwd" required style="width:100%;padding:13px 16px;background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.12);border-radius:13px;color:white;font-size:14px;font-weight:600;font-family:Plus Jakarta Sans,sans-serif;outline:none;transition:border-color 0.2s" placeholder="Enter your password" onfocus="this.style.borderColor='rgba(245,158,11,0.6)'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'"></div></div><div id="loginErr" class="hidden shake" style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);border-radius:12px;padding:12px 15px;font-size:13px;color:#fca5a5;align-items:center;gap:8px"><i class="fas fa-exclamation-circle"></i><span id="loginErrMsg"></span></div><button type="submit" id="loginBtn" style="width:100%;padding:14px;background:linear-gradient(135deg,#4f46e5,#6d28d9);border:none;border-radius:14px;color:white;font-size:15px;font-weight:800;cursor:pointer;letter-spacing:-0.2px;transition:all 0.25s;box-shadow:0 6px 24px rgba(79,70,229,0.45);font-family:Outfit,sans-serif" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 10px 30px rgba(79,70,229,0.55)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 6px 24px rgba(79,70,229,0.45)'"><i class="fas fa-sign-in-alt mr-2"></i>Login</button></form><div style="text-align:center;margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.07)"><p style="font-size:11px;color:rgba(100,116,139,0.7)">© 2024 DGST Welfare Society · v5.2</p></div></div></div></div>`;document.getElementById('loginScreen').classList.remove('hidden');document.getElementById('app').classList.add('hidden');loadLogo()}
+async function doLogin(e){e.preventDefault();const r=document.getElementById('loginRole').value,p=document.getElementById('loginPwd').value,btn=document.getElementById('loginBtn'),err=document.getElementById('loginErr');if(!r||!p){document.getElementById('loginErrMsg').textContent='Select role & enter password';err.style.display='flex';err.classList.remove('hidden');return}if(!loginAllowed()){document.getElementById('loginErrMsg').textContent=loginCooldownMsg();err.style.display='flex';err.classList.remove('hidden');return}btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin mr-2"></i>...';err.classList.add('hidden');try{const u=await DB.login(r,p);_loginAttempts.count=0;cUser=u.display_name||r;cRole=u.role||r;sessionStorage.setItem('dgst_s',JSON.stringify({u:cUser,r:cRole,t:Date.now()}));DB.log(cUser,'Login');loadApp()}catch(er){document.getElementById('loginErrMsg').textContent='Invalid password (Attempts: '+_loginAttempts.count+'/5)';err.style.display='flex';err.classList.remove('hidden')}finally{btn.disabled=false;btn.innerHTML='<i class="fas fa-sign-in-alt mr-2"></i>Login'}}
+function chkSess(){const s=sessionStorage.getItem('dgst_s');if(s){try{const d=JSON.parse(s);if(Date.now()-d.t<CONFIG.SESSION_DURATION*3600000){cUser=d.u;cRole=d.r;return true}}catch(e){}}return false}
+function logout(){if(confirm('Logout?')){stopAR();DB.log(cUser,'Logout');sessionStorage.removeItem('dgst_s');cUser=null;cRole=null;showLogin()}}
+
+// AUTO REFRESH
+let _art=null;
+function startAR(){stopAR();_art=setInterval(async()=>{if(!document.getElementById('app').classList.contains('hidden')&&!document.hidden){try{showSync('s');await refreshDash();showSync('l')}catch(e){showSync('e')}}},CONFIG.AUTO_REFRESH);showSync('l')}
+function stopAR(){if(_art){clearInterval(_art);_art=null}document.getElementById('syncBadge').classList.add('hidden')}
+function showSync(s){const b=document.getElementById('syncBadge'),d=document.getElementById('syncDot'),t=document.getElementById('syncText');b.classList.remove('hidden');if(s==='l'){b.style.background='#10b981';d.className='fas fa-circle text-xs';t.textContent='Live • '+getTS()}else if(s==='s'){b.style.background='#3b82f6';d.className='fas fa-sync-alt text-xs spinning';t.textContent='Syncing...'}else{b.style.background='#ef4444';d.className='fas fa-exclamation-circle text-xs';t.textContent='Error'}}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&cUser)refreshDash().then(()=>showSync('l')).catch(()=>showSync('e'))});
+let _pendR=[];
+function chkRemind(){if(!CONFIG.REMINDER_DATES.includes(new Date().getDate())){document.getElementById('reminderBanner').classList.add('hidden');return}DB.gFin().then(fn=>{_pendR=fn.filter(m=>m.status==='active'&&Number(m.total_pending)>0&&m.phone&&m.phone.length>=10);if(_pendR.length>0){document.getElementById('reminderText').textContent=_pendR.length+' members - '+fmt(_pendR.reduce((s,m)=>s+Number(m.total_pending),0))+' pending';document.getElementById('reminderBanner').classList.remove('hidden')}}).catch(()=>{})}
+function closeReminderBanner(){document.getElementById('reminderBanner').classList.add('hidden')}
+async function sendBulkReminders(){if(!_pendR.length)return;if(!confirm('Send to '+_pendR.length+'?'))return;for(let i=0;i<Math.min(_pendR.length,10);i++){const m=_pendR[i];setTimeout(()=>{window.open('https://wa.me/91'+m.phone+'?text='+encodeURIComponent('*'+CONFIG.SOCIETY_NAME+'*\nDear '+m.name+', Pending: *'+fmt(m.total_pending)+'*\nPlease pay. Thanks!'),'_blank')},i*1500)}DB.log(cUser,'Sent '+_pendR.length+' reminders');closeReminderBanner();showToast('Done','Reminders sent!','success')}
+
+// =============================================
+// LOGO / ICON CHANGE SYSTEM (ENHANCED)
+// =============================================
+async function loadLogo(){const l=await DB.gSet('society_logo');if(l)applyLogo(l)}
+function applyLogo(s){
+    // Header logo
+    const hi=document.getElementById('headerLogoImg'),hic=document.getElementById('headerLogoIcon');
+    if(hi){hi.src=s;hi.classList.remove('hidden')}
+    if(hic)hic.classList.add('hidden');
+    // Footer logo
+    const fi=document.getElementById('footerLogoImg'),fb=document.getElementById('footerLogoBox');
+    if(fi){fi.src=s}
+    if(fb)fb.classList.remove('hidden');
+    // Login logo
+    const li=document.getElementById('loginLogoImg'),lic=document.getElementById('loginLogoIcon');
+    if(li){li.src=s;li.classList.remove('hidden')}
+    if(lic)lic.classList.add('hidden');
+}
+
+function showLogoUploadModal(){
+    if(!isA()){showToast('No','Admin only — Sirf admin logo change kar sakta hai','error');return}
+    
+    // Check current logo
+    const currentLogo=document.getElementById('headerLogoImg');
+    const hasLogo=currentLogo&&!currentLogo.classList.contains('hidden');
+    const currentSrc=hasLogo?currentLogo.src:'';
+    
+    showModal('🖼️ Change Logo / Icon',
+    '<div class="space-y-4">'+
+    '<div class="bg-gradient-to-r from-teal-600 to-cyan-700 text-white rounded-xl p-4">'+
+        '<h3 class="text-lg font-bold"><i class="fas fa-image mr-2"></i>Society Logo / Icon Change</h3>'+
+        '<p class="text-sm opacity-80">Ye logo Header, Footer, Login screen, Receipts — sab jagah dikhega</p>'+
+    '</div>'+
+    
+    '<div class="bg-blue-50 border-l-4 border-blue-400 p-3 rounded-r-xl text-sm text-blue-800">'+
+        '<i class="fas fa-info-circle mr-1"></i><b>Header ke left side mein jo building icon hai</b>, wo isse change hoga. '+
+        'Login screen, Footer, aur Receipts mein bhi automatically update ho jayega.'+
+    '</div>'+
+    
+    // Current logo preview
+    '<div class="bg-gray-50 rounded-xl p-4">'+
+        '<h4 class="font-bold text-sm mb-3"><i class="fas fa-eye mr-1"></i>Current Logo/Icon:</h4>'+
+        '<div class="flex items-center justify-center gap-4">'+
+            '<div class="w-20 h-20 bg-white rounded-xl border-2 border-gray-300 flex items-center justify-center overflow-hidden">'+
+                (hasLogo?
+                    '<img src="'+currentSrc+'" class="w-full h-full object-contain p-1" alt="Current">':
+                    '<i class="fas fa-building text-3xl text-gray-400"></i>')+
+            '</div>'+
+            '<div class="text-sm text-gray-600">'+
+                '<p class="font-semibold">'+(hasLogo?'✅ Custom logo set hai':'📦 Default icon (building)')+'</p>'+
+                '<p class="text-xs text-gray-400 mt-1">'+(hasLogo?'Neeche se change kar sakte ho':'Naya logo upload karo')+'</p>'+
+            '</div>'+
+        '</div>'+
+    '</div>'+
+    
+    // Upload area
+    '<div class="border-2 border-dashed border-teal-300 rounded-xl p-8 text-center cursor-pointer hover:bg-teal-50 transition-all" onclick="document.getElementById(\'logoFileInput\').click()" id="logoDropZone">'+
+        '<i class="fas fa-cloud-upload-alt text-5xl text-teal-400 mb-3"></i>'+
+        '<p class="font-semibold text-gray-700">Click to select new logo/icon image</p>'+
+        '<p class="text-xs text-gray-400 mt-1">PNG, JPG, SVG • Max 2MB • Square image best hai</p>'+
+        '<p class="text-xs text-teal-600 mt-2 font-semibold"><i class="fas fa-lightbulb mr-1"></i>Tip: Square (1:1) image sabse accha dikhega</p>'+
+        '<input type="file" id="logoFileInput" accept="image/*" class="hidden" onchange="previewNewLogo(event)">'+
+    '</div>'+
+    
+    // Preview section (hidden initially)
+    '<div id="logoPreviewSection" class="hidden">'+
+        '<div class="bg-green-50 border-2 border-green-300 rounded-xl p-4">'+
+            '<h4 class="font-bold text-sm mb-3 text-green-800"><i class="fas fa-check-circle mr-1"></i>New Logo Preview:</h4>'+
+            '<div class="flex flex-col md:flex-row items-center gap-4">'+
+                '<img id="logoPreviewImg" class="w-24 h-24 object-contain rounded-xl border-2 border-green-400 bg-white p-2">'+
+                '<div class="text-sm space-y-2 flex-1">'+
+                    '<p class="text-green-700 font-semibold">Ye logo in jagah dikhega:</p>'+
+                    '<div class="grid grid-cols-2 gap-1 text-xs">'+
+                        '<div class="bg-white rounded px-2 py-1"><i class="fas fa-check text-green-500 mr-1"></i>Header (left side)</div>'+
+                        '<div class="bg-white rounded px-2 py-1"><i class="fas fa-check text-green-500 mr-1"></i>Login Screen</div>'+
+                        '<div class="bg-white rounded px-2 py-1"><i class="fas fa-check text-green-500 mr-1"></i>Footer</div>'+
+                        '<div class="bg-white rounded px-2 py-1"><i class="fas fa-check text-green-500 mr-1"></i>Receipts</div>'+
+                    '</div>'+
+                '</div>'+
+            '</div>'+
+            '<div class="flex gap-3 mt-4">'+
+                '<button onclick="doSaveLogo()" id="saveLogoBtn" class="flex-1 bg-green-600 text-white py-3 rounded-xl font-bold hover:bg-green-700 transition-all"><i class="fas fa-save mr-2"></i>Save Logo</button>'+
+                '<button onclick="document.getElementById(\'logoFileInput\').click()" class="flex-1 bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-300"><i class="fas fa-redo mr-1"></i>Different Image</button>'+
+            '</div>'+
+        '</div>'+
+    '</div>'+
+    
+    // Remove logo button (only if logo exists)
+    (hasLogo?
+    '<button onclick="removeLogo()" class="w-full bg-red-50 text-red-600 py-2 rounded-xl font-semibold hover:bg-red-100 border border-red-200 transition-all">'+
+        '<i class="fas fa-trash mr-1"></i>Remove Logo (Default icon pe wapas jao)'+
+    '</button>':'')+ 
+    
+    '<button onclick="closeModal()" class="w-full bg-gray-100 text-gray-700 py-2 rounded-xl font-semibold hover:bg-gray-200">Cancel</button>'+
+    '</div>'
+    );
+}
+
+let _logoBase64=null;
+
+function previewNewLogo(e){
+    const f=e.target.files[0];
+    if(!f)return;
+    if(f.size>2*1024*1024){showToast('Error','File bahut badi hai! Max 2MB allowed','error');return}
+    if(!f.type.startsWith('image/')){showToast('Error','Sirf image files allowed (PNG, JPG, SVG)','error');return}
+    const r=new FileReader();
+    r.onload=function(ev){
+        _logoBase64=ev.target.result;
+        document.getElementById('logoPreviewImg').src=_logoBase64;
+        document.getElementById('logoPreviewSection').classList.remove('hidden');
+        // Hide upload zone text
+        document.getElementById('logoDropZone').innerHTML='<i class="fas fa-check-circle text-3xl text-green-500 mb-2"></i><p class="font-semibold text-green-700">Image selected! ✓</p><p class="text-xs text-gray-500">Preview neeche dekho, ya click karke doosri image select karo</p><input type="file" id="logoFileInput" accept="image/*" class="hidden" onchange="previewNewLogo(event)">';
+    };
+    r.readAsDataURL(f);
+}
+
+async function doSaveLogo(){
+    if(!_logoBase64){showToast('Error','Pehle image select karo','error');return}
+    const btn=document.getElementById('saveLogoBtn');
+    btn.disabled=true;
+    btn.innerHTML='<i class="fas fa-spinner fa-spin mr-2"></i>Saving everywhere...';
+    
+    try{
+        // Save to Supabase + localStorage
+        await DB.sSet('society_logo',_logoBase64);
+        
+        // Apply everywhere immediately
+        applyLogo(_logoBase64);
+        
+        // Log activity
+        DB.log(cUser,'Updated society logo/icon');
+        
+        _logoBase64=null;
+        closeModal();
+        showToast('✅ Logo Updated!','Header, Footer, Login — sab jagah update ho gaya!','success');
+    }catch(e){
+        showToast('Error','Logo save mein problem: '+e.message,'error');
+        btn.disabled=false;
+        btn.innerHTML='<i class="fas fa-save mr-2"></i>Save Logo';
+    }
+}
+
+async function removeLogo(){
+    if(!confirm('Logo remove karein? Default building icon wapas aa jayega.'))return;
+    try{
+        // Remove from storage
+        await DB.sSet('society_logo','');
+        localStorage.removeItem('dgst_society_logo');
+        
+        // Reset header
+        const hi=document.getElementById('headerLogoImg'),hic=document.getElementById('headerLogoIcon');
+        if(hi)hi.classList.add('hidden');
+        if(hic)hic.classList.remove('hidden');
+        
+        // Reset footer
+        const fb=document.getElementById('footerLogoBox');
+        if(fb)fb.classList.add('hidden');
+        
+        // Reset login
+        const li=document.getElementById('loginLogoImg'),lic=document.getElementById('loginLogoIcon');
+        if(li)li.classList.add('hidden');
+        if(lic)lic.classList.remove('hidden');
+        
+        DB.log(cUser,'Removed society logo');
+        closeModal();
+        showToast('Done','Logo removed — default icon wapas aa gaya','success');
+    }catch(e){
+        showToast('Error','Failed to remove','error');
+    }
+}
+// =============================================
+// END LOGO SYSTEM
+// =============================================
+
+// MAIN APP
+function loadApp(){document.getElementById('loginScreen').classList.add('hidden');document.getElementById('app').classList.remove('hidden');document.getElementById('loadingOverlay').style.display='none';document.getElementById('userRole').textContent=cUser;document.getElementById('userRoleText').textContent=cUser;document.getElementById('dropdownUserName').textContent=cUser;document.querySelectorAll('.admin-only').forEach(el=>el.style.display=isA()?'':'none');const mb=document.getElementById('userMenuBtn'),dd=document.getElementById('userDropdown');mb.onclick=e=>{e.stopPropagation();dd.classList.toggle('hidden')};document.addEventListener('click',()=>dd.classList.add('hidden'));updDT();setInterval(updDT,60000);startAR();refreshDash();loadLogo();setTimeout(chkRemind,3000)}
+function updDT(){const n=new Date();const el=document.getElementById('currentDateTime');if(el)el.textContent=n.toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'})+' | '+n.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true})}
+
+let _retSoon=[];
+async function refreshDash(){try{const my=getCMY();document.getElementById('currentMonthYear').textContent=my;document.getElementById('currentMonthYearFooter').textContent=my;const[fn,allP,allW,bl]=await Promise.all([DB.gFin(),DB.gP({}),DB.gW({limit:10}),DB.gBal()]);const act=fn.filter(m=>m.status==='active'),ret=fn.filter(m=>m.status==='retired'),tra=fn.filter(m=>m.status==='transferred');const tRecv=act.reduce((s,m)=>s+Math.max(0,Number(m.total_pending)),0);const ym=getYM(),cmr=allP.filter(p=>p.payment_date&&p.payment_date.startsWith(ym)).reduce((s,p)=>s+Number(p.amount),0);const totAll=allP.reduce((s,p)=>s+Number(p.amount),0);const cmw=allW.filter(w=>Number(w.amount)>0&&w.withdrawal_date&&w.withdrawal_date.startsWith(ym)).reduce((s,w)=>s+Number(w.amount),0);const pc=act.filter(m=>Number(m.total_pending)>0).length;const wp=fn.filter(m=>m.phone&&m.phone.length>=10).length;document.getElementById('totalMembers').textContent=act.length;document.getElementById('totalMembersCount').textContent=fn.length;document.getElementById('totalReceivable').textContent=fmt(tRecv);document.getElementById('currentMonthReceivable').textContent=fmt(tRecv);document.getElementById('currentMonthReceived').textContent=fmt(cmr);document.getElementById('currentMonthWithdrawn').textContent=fmt(cmw);document.getElementById('currentBalance').textContent=fmt(bl);document.getElementById('totalReceived').textContent=fmt(cmr);document.getElementById('totalReceivedAllTime').textContent=fmt(totAll);document.getElementById('pendingMembers').textContent=pc;document.getElementById('monthlyPotential').textContent=fmt(tRecv);document.getElementById('withPhoneCount').textContent=wp;const pct=tRecv>0?(cmr/tRecv*100):(cmr>0?100:0);document.getElementById('collectionProgress').style.width=Math.min(100,pct)+'%';document.getElementById('monthlyProgress').style.width=Math.min(100,pct)+'%';document.getElementById('activeCount').textContent=act.length;document.getElementById('retiredCount').textContent=ret.length;document.getElementById('transferredCount').textContent=tra.length;document.getElementById('transferredStatCount').textContent=tra.length;const now=new Date(),sx=new Date();sx.setMonth(sx.getMonth()+6);_retSoon=fn.filter(m=>{if(!m.retirement_date||m.status!=='active')return false;const rd=new Date(m.retirement_date);return rd>now&&rd<=sx});document.getElementById('retiringSoonCount').textContent=_retSoon.length;document.getElementById('retirementStatus').textContent=_retSoon.length+' Retiring';const cn={a:0,ac:0,c:0,p:0};act.forEach(m=>{const d=(m.designation||'').toLowerCase();if(d.includes('assistant')||d.includes('pa')||d.includes('superintendent'))cn.a++;else if(d.includes('accountant')||d.includes('auditor'))cn.ac++;else if(d.includes('clerk')||d.includes('steno')||d.includes('deo')||d.includes('deco'))cn.c++;else if(d.includes('peon')||d.includes('driver')||d.includes('helper'))cn.p++});document.getElementById('assistantCount').textContent=cn.a;document.getElementById('accountantCount').textContent=cn.ac;document.getElementById('clerkCount').textContent=cn.c;document.getElementById('peonCount').textContent=cn.p;const rp=allP.slice(0,5);document.getElementById('recentPayments').innerHTML=rp.length?rp.map(p=>'<div class="border border-green-200 rounded-lg p-3 hover:bg-green-50 cursor-pointer" onclick="viewMD('+p.member_id+')"><div class="flex justify-between"><div><p class="font-semibold text-sm">'+esc(p.members?.name||'-')+'</p><p class="text-xs text-gray-500">'+p.receipt_no+'</p></div><div class="text-right"><span class="font-bold text-green-700 text-sm">'+fmt(p.amount)+'</span><p class="text-xs text-gray-500">'+fmtD(p.payment_date)+'</p></div></div></div>').join(''):'<p class="text-center py-4 text-gray-400 text-sm">No payments yet</p>';const rw=allW.filter(w=>Number(w.amount)>0).slice(0,5);document.getElementById('recentWithdrawals').innerHTML=rw.length?rw.map(w=>'<div class="border border-red-200 rounded-lg p-3 hover:bg-red-50"><div class="flex justify-between"><div><p class="font-semibold text-sm">'+esc(w.purpose)+'</p></div><div class="text-right"><span class="font-bold text-red-700 text-sm">'+fmt(w.amount)+'</span><p class="text-xs text-gray-500">'+fmtD(w.withdrawal_date)+'</p></div></div></div>').join(''):'<p class="text-center py-4 text-gray-400 text-sm">No withdrawals</p>';document.getElementById('lastUpdated').textContent=getTS();document.getElementById('firebaseStatusText').textContent='Connected ✓';document.getElementById('lastSyncTime').textContent='Synced '+getTS()}catch(e){console.error('Dash:',e);document.getElementById('firebaseStatusText').textContent='Error'}}
+
+// ALL MEMBERS
+async function showAllMembersView(){showModal('All Members','<div class="text-center py-8"><div class="spinner"></div></div>');try{const f=await DB.gFin();const sb={active:'status-active',retired:'status-retired',parked:'status-parked',transferred:'status-transferred'};document.getElementById('modalContent').innerHTML='<div class="space-y-4"><div class="bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-xl p-4"><h3 class="text-lg font-bold"><i class="fas fa-users mr-2"></i>All Members ('+f.length+')</h3></div><div class="flex flex-wrap gap-2"><div class="relative flex-1 min-w-[180px]"><i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i><input type="text" id="mS" class="w-full pl-9 p-2 border-2 border-gray-300 rounded-lg text-sm" placeholder="Search..." oninput="fMT(this.value)"></div><select onchange="fMS(this.value)" class="p-2 border-2 border-gray-300 rounded-lg text-sm"><option value="all">All</option><option value="active">Active</option><option value="retired">Retired</option><option value="parked">Parked</option><option value="transferred">Transferred</option></select><button onclick="expXL()" class="excel-export-btn text-sm"><i class="fas fa-file-excel"></i>Excel</button></div><div class="overflow-x-auto rounded-lg border"><table class="min-w-full bg-white text-sm"><thead><tr class="bg-gray-100"><th class="py-2 px-2 text-left">ID</th><th class="py-2 px-2 text-left">Name</th><th class="py-2 px-2 text-left hidden md:table-cell">Designation</th><th class="py-2 px-2 text-left">Status</th><th class="py-2 px-2 text-right">Paid</th><th class="py-2 px-2 text-right">Due</th><th class="py-2 px-2 text-center">Act</th></tr></thead><tbody id="mTB">'+f.map(m=>'<tr class="border-b hover:bg-blue-50" data-n="'+(m.name+(m.designation||'')+(m.payee_code||'')).toLowerCase()+'" data-s="'+m.status+'"><td class="py-2 px-2">'+m.id+'</td><td class="py-2 px-2 font-semibold">'+esc(m.name)+'</td><td class="py-2 px-2 hidden md:table-cell">'+esc(m.designation)+'</td><td class="py-2 px-2"><span class="status-badge '+(sb[m.status]||'status-active')+'">'+m.status+'</span></td><td class="py-2 px-2 text-right text-green-600">'+fmt(m.total_paid)+'</td><td class="py-2 px-2 text-right '+(Number(m.total_pending)>0?'text-red-600':'text-green-600')+' font-semibold">'+fmt(m.total_pending)+'</td><td class="py-2 px-2 text-center"><button onclick="viewMD('+m.id+')" class="action-btn edit-btn"><i class="fas fa-eye"></i></button>'+(isA()&&m.status==='active'?' <button onclick="qP('+m.id+')" class="action-btn" style="background:#10b981;color:white"><i class="fas fa-rupee-sign"></i></button>':'')+'</td></tr>').join('')+'</tbody></table></div><button onclick="closeModal()" class="w-full bg-gray-200 py-2 rounded-lg font-semibold mt-3">Close</button></div>'}catch(e){document.getElementById('modalContent').innerHTML='<p class="text-red-500 text-center py-8">Failed. <button onclick="showAllMembersView()" class="text-blue-600 underline">Retry</button></p>'}}
+function fMT(v){const q=v.toLowerCase();document.querySelectorAll('#mTB tr').forEach(r=>r.style.display=r.getAttribute('data-n').includes(q)?'':'none')}
+function fMS(v){document.querySelectorAll('#mTB tr').forEach(r=>r.style.display=(v==='all'||r.getAttribute('data-s')===v)?'':'none')}
+function qP(id){closeModal();setTimeout(()=>showQPM(id),300)}
+
+// VIEW MEMBER
+async function viewMD(id){showModal('Member','<div class="text-center py-8"><div class="spinner"></div></div>');try{const[m,f,ps]=await Promise.all([DB.gM1(id),DB.gFin1(id),DB.gP({mid:id})]);const pend=Number(f.total_pending),isAdv=pend<0,adv=isAdv?Math.abs(pend):0;let ab='';if(isAdv)ab='<div class="mt-2"><span class="status-badge status-advance"><i class="fas fa-star mr-1"></i>ADVANCE: '+fmt(adv)+'</span></div>';document.getElementById('modalContent').innerHTML='<div class="space-y-4"><div class="bg-gradient-to-r from-blue-500 to-cyan-600 text-white rounded-xl p-4"><h3 class="text-lg font-bold">'+esc(m.name)+'</h3><p class="opacity-90 text-sm">'+esc(m.designation)+' | ID:'+m.id+'</p></div><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div class="bg-gray-50 p-4 rounded-xl"><h4 class="font-bold text-sm mb-2">Details</h4><div class="space-y-1 text-sm">'+DR('Name',esc(m.name))+DR('Designation',esc(m.designation))+DR('Payee Code',esc(m.payee_code||'N/A'))+DR('Phone',m.phone||'-')+DR('Joined',fmtD(m.join_date))+DR('Retirement',m.retirement_date?fmtD(m.retirement_date):'-')+DR('Status',m.status)+'</div></div><div class="'+(isAdv?'advance-highlight':'bg-blue-50')+' p-4 rounded-xl"><h4 class="font-bold text-sm mb-2">Financial</h4><div class="space-y-1 text-sm">'+DR('Fee',fmt(CONFIG.MONTHLY_CONTRIBUTION))+DR('Months',f.total_months_due)+DR('Receivable',fmt(f.total_receivable))+DR('Paid','<span class=text-green-600>'+fmt(f.total_paid)+'</span>')+DR(isAdv?'Advance':'Pending','<span class='+(pend>0?'text-red-600':pend<0?'text-blue-600':'text-green-600')+'>'+fmt(isAdv?adv:pend)+'</span>')+ab+'</div></div></div><div><h4 class="font-bold text-sm mb-2">Payments ('+ps.length+')</h4>'+(ps.length?'<div class="overflow-x-auto rounded-lg border"><table class="min-w-full bg-white text-sm"><thead><tr class="bg-gray-100"><th class="py-2 px-3 text-left">Date</th><th class="py-2 px-3 text-left">Receipt</th><th class="py-2 px-3 text-right">Amount</th><th class="py-2 px-3">Mode</th></tr></thead><tbody>'+ps.map(p=>'<tr class="border-b"><td class="py-2 px-3">'+fmtD(p.payment_date)+'</td><td class="py-2 px-3">'+p.receipt_no+'</td><td class="py-2 px-3 text-right text-green-600 font-semibold">'+fmt(p.amount)+'</td><td class="py-2 px-3">'+(p.payment_mode||'')+'</td></tr>').join('')+'</tbody></table></div>':'<p class="text-gray-400 text-center py-3 text-sm">No payments</p>')+'</div><div class="flex flex-wrap gap-2">'+(isA()&&m.status==='active'?'<button onclick="qP('+m.id+')" class="flex-1 bg-green-600 text-white py-2 rounded-xl font-semibold text-sm"><i class="fas fa-rupee-sign mr-1"></i>Pay</button><button onclick="showEF('+m.id+')" class="flex-1 bg-blue-600 text-white py-2 rounded-xl font-semibold text-sm"><i class="fas fa-edit mr-1"></i>Edit</button>':'')+'<button onclick="closeModal()" class="flex-1 bg-gray-200 py-2 rounded-xl font-semibold text-sm">Close</button></div></div>'}catch(e){showToast('Error','Failed','error')}}
+
+// ADD/EDIT MEMBER
+function showAddMemberModal(){if(!isA())return;showModal('Add Member','<div class="space-y-4"><div class="bg-gradient-to-r from-blue-500 to-cyan-600 text-white rounded-xl p-4"><h3 class="text-lg font-bold"><i class="fas fa-user-plus mr-2"></i>New Member</h3></div><div class="grid grid-cols-1 md:grid-cols-2 gap-3"><div><label class="block text-sm font-semibold mb-1">Name *</label><input type="text" id="nmN" class="w-full p-2 border-2 border-gray-300 rounded-lg"></div><div><label class="block text-sm font-semibold mb-1">Designation *</label><select id="nmD" class="w-full p-2 border-2 border-gray-300 rounded-lg"><option value="">Select</option><option>Assistant</option><option>Clerk</option><option>Accountant</option><option>Peon</option><option>Driver</option><option>DEO</option><option>Steno Typist</option><option>Superintendent</option><option>DECO</option><option>Helper</option></select></div><div><label class="block text-sm font-semibold mb-1">Payee Code</label><input type="text" id="nmPC" class="w-full p-2 border-2 border-gray-300 rounded-lg"></div><div><label class="block text-sm font-semibold mb-1">Phone</label><input type="text" id="nmP" class="w-full p-2 border-2 border-gray-300 rounded-lg"></div><div><label class="block text-sm font-semibold mb-1">Join Date *</label><input type="date" id="nmJ" class="w-full p-2 border-2 border-gray-300 rounded-lg" value="'+new Date().toISOString().split('T')[0]+'"></div><div><label class="block text-sm font-semibold mb-1">Retirement</label><input type="date" id="nmR" class="w-full p-2 border-2 border-gray-300 rounded-lg"></div></div><div class="flex gap-3"><button onclick="doAdd()" id="aBtn" class="flex-1 bg-green-600 text-white py-2 rounded-xl font-semibold">Save</button><button onclick="closeModal()" class="flex-1 bg-gray-200 py-2 rounded-xl font-semibold">Cancel</button></div></div>')}
+async function doAdd(){const n=document.getElementById('nmN').value.trim(),d=document.getElementById('nmD').value,pc=document.getElementById('nmPC').value.trim(),p=document.getElementById('nmP').value.trim(),j=document.getElementById('nmJ').value,r=document.getElementById('nmR').value;if(!n||!d||!j){showToast('Error','Fill required','error');return}const b=document.getElementById('aBtn');b.disabled=true;b.innerHTML='Saving...';try{await DB.aM({name:n,designation:d,payee_code:pc||null,phone:p,join_date:j,retirement_date:r||null,status:'active'});DB.log(cUser,'Added:'+n);closeModal();await refreshDash();showToast('Done',n+' added!','success')}catch(e){showToast('Error','Failed','error');b.disabled=false;b.innerHTML='Save'}}
+async function showEF(id){if(!isA())return;try{const m=await DB.gM1(id);showModal('Edit','<div class="space-y-4"><div class="grid grid-cols-1 md:grid-cols-2 gap-3"><div><label class="block text-sm font-semibold mb-1">Name</label><input type="text" id="eN" value="'+esc(m.name)+'" class="w-full p-2 border-2 border-gray-300 rounded-lg"></div><div><label class="block text-sm font-semibold mb-1">Designation</label><input type="text" id="eD" value="'+esc(m.designation)+'" class="w-full p-2 border-2 border-gray-300 rounded-lg"></div><div><label class="block text-sm font-semibold mb-1">Payee Code</label><input type="text" id="ePC" value="'+esc(m.payee_code||'')+'" class="w-full p-2 border-2 border-gray-300 rounded-lg"></div><div><label class="block text-sm font-semibold mb-1">Phone</label><input type="text" id="eP" value="'+(m.phone||'')+'" class="w-full p-2 border-2 border-gray-300 rounded-lg"></div><div><label class="block text-sm font-semibold mb-1">Join</label><input type="date" id="eJ" value="'+(m.join_date||'')+'" class="w-full p-2 border-2 border-gray-300 rounded-lg"></div><div><label class="block text-sm font-semibold mb-1">Retirement</label><input type="date" id="eR" value="'+(m.retirement_date||'')+'" class="w-full p-2 border-2 border-gray-300 rounded-lg"></div><div><label class="block text-sm font-semibold mb-1">Status</label><select id="eS" class="w-full p-2 border-2 border-gray-300 rounded-lg"><option value="active" '+(m.status==='active'?'selected':'')+'>Active</option><option value="retired" '+(m.status==='retired'?'selected':'')+'>Retired</option><option value="parked" '+(m.status==='parked'?'selected':'')+'>Parked</option><option value="transferred" '+(m.status==='transferred'?'selected':'')+'>Transferred</option></select></div></div><div class="flex gap-3"><button onclick="doEdit('+m.id+')" id="eBtn" class="flex-1 bg-green-600 text-white py-2 rounded-xl font-semibold">Save</button><button onclick="doDel('+m.id+',\''+esc(m.name)+'\')" class="bg-red-600 text-white py-2 px-4 rounded-xl font-semibold"><i class="fas fa-trash"></i></button><button onclick="closeModal()" class="flex-1 bg-gray-200 py-2 rounded-xl font-semibold">Cancel</button></div></div>')}catch(e){showToast('Error','Failed','error')}}
+async function doEdit(id){const b=document.getElementById('eBtn');b.disabled=true;b.innerHTML='Saving...';try{await DB.uM(id,{name:document.getElementById('eN').value.trim(),designation:document.getElementById('eD').value.trim(),payee_code:document.getElementById('ePC').value.trim()||null,phone:document.getElementById('eP').value.trim(),join_date:document.getElementById('eJ').value,retirement_date:document.getElementById('eR').value||null,status:document.getElementById('eS').value});DB.log(cUser,'Updated:'+id);closeModal();await refreshDash();showToast('Done','Updated!','success')}catch(e){showToast('Error','Failed','error');b.disabled=false;b.innerHTML='Save'}}
+async function doDel(id,n){if(confirm('Delete '+n+'?')){try{await DB.dM(id);DB.log(cUser,'Deleted:'+n);closeModal();await refreshDash();showToast('Done',n+' deleted','success')}catch(e){showToast('Error','Failed','error')}}}
+
+// ADD PAYMENT
+async function showQPM(preId=null){if(!isA()){showToast('No','Admin only','error');return}try{const f=await DB.gFin();const am=f.filter(m=>m.status==='active');const td=new Date().toISOString().split('T')[0];showModal('Add Payment','<div class="space-y-4"><div class="bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl p-4"><h3 class="text-lg font-bold"><i class="fas fa-money-bill-wave mr-2"></i>Add Payment</h3></div><div class="flex rounded-xl overflow-hidden border-2 border-gray-200"><button id="tM" onclick="swPT(\'m\')" class="flex-1 py-2 font-bold text-sm bg-green-600 text-white">Member</button><button id="tO" onclick="swPT(\'o\')" class="flex-1 py-2 font-bold text-sm bg-gray-100 text-gray-600">Other Income</button></div><div id="sM"><div class="grid grid-cols-1 md:grid-cols-2 gap-3"><div class="md:col-span-2"><label class="block text-sm font-semibold mb-1">Search & Select *</label><input type="text" id="pMS" class="w-full p-2 border-2 border-gray-300 rounded-lg text-sm mb-1" placeholder="Type name..." oninput="fPML(this.value)"><select id="pM" class="w-full p-2 border-2 border-gray-300 rounded-lg" onchange="onPM(this.value)" size="5" style="max-height:140px"><option value="">-- Select --</option>'+am.map(m=>'<option value="'+m.id+'" '+(m.id==preId?'selected':'')+'>'+esc(m.name)+' | '+esc(m.designation)+' ('+fmt(m.total_pending)+' due)</option>').join('')+'</select></div><div><label class="block text-sm font-semibold mb-1">Amount ₹ *</label><input type="number" id="pA" class="w-full p-2 border-2 border-gray-300 rounded-lg" value="100" min="1" oninput="onPM(document.getElementById(\'pM\').value)"></div><div><label class="block text-sm font-semibold mb-1">Date *</label><input type="date" id="pD" class="w-full p-2 border-2 border-gray-300 rounded-lg" value="'+td+'"></div><div><label class="block text-sm font-semibold mb-1">Mode</label><select id="pMo" class="w-full p-2 border-2 border-gray-300 rounded-lg"><option>Cash</option><option>Bank Transfer</option><option>UPI</option><option>Cheque</option></select></div><div><label class="block text-sm font-semibold mb-1">Remarks</label><textarea id="pR" class="w-full p-2 border-2 border-gray-300 rounded-lg" rows="2"></textarea></div></div><div id="pI" class="bg-blue-50 p-3 rounded-lg hidden text-sm mt-2"></div><div class="flex gap-3 mt-3"><button onclick="doPay()" id="pBtn" class="flex-1 bg-green-600 text-white py-3 rounded-xl font-bold">Save & Receipt</button><button onclick="closeModal()" class="flex-1 bg-gray-200 py-3 rounded-xl font-semibold">Cancel</button></div></div><div id="sO" class="hidden space-y-3"><div class="bg-blue-50 border-l-4 border-blue-400 p-3 rounded-r-xl text-sm">Amount added to balance.</div><div class="grid grid-cols-1 md:grid-cols-2 gap-3"><div><label class="block text-sm font-semibold mb-1">Source *</label><input type="text" id="oN" class="w-full p-2 border-2 border-gray-300 rounded-lg"></div><div><label class="block text-sm font-semibold mb-1">Amount ₹ *</label><input type="number" id="oA" class="w-full p-2 border-2 border-gray-300 rounded-lg" min="1"></div><div><label class="block text-sm font-semibold mb-1">Date *</label><input type="date" id="oD" class="w-full p-2 border-2 border-gray-300 rounded-lg" value="'+td+'"></div><div><label class="block text-sm font-semibold mb-1">Mode</label><select id="oMo" class="w-full p-2 border-2 border-gray-300 rounded-lg"><option>Cash</option><option>Bank Transfer</option><option>UPI</option><option>Cheque</option></select></div><div class="md:col-span-2"><label class="block text-sm font-semibold mb-1">Purpose *</label><input type="text" id="oP" class="w-full p-2 border-2 border-gray-300 rounded-lg"></div><div class="md:col-span-2"><label class="block text-sm font-semibold mb-1">Remarks</label><textarea id="oR" class="w-full p-2 border-2 border-gray-300 rounded-lg" rows="2"></textarea></div></div><div class="flex gap-3"><button onclick="doOI()" id="oBtn" class="flex-1 bg-blue-600 text-white py-3 rounded-xl font-bold">Add Income</button><button onclick="closeModal()" class="flex-1 bg-gray-200 py-3 rounded-xl font-semibold">Cancel</button></div></div></div>');if(preId)onPM(preId)}catch(e){showToast('Error','Failed','error')}}
+function fPML(q){q=q.toLowerCase();Array.from(document.getElementById('pM').options).forEach(o=>{if(!o.value)return;o.style.display=o.textContent.toLowerCase().includes(q)?'':'none'})}
+function swPT(t){const im=t==='m';document.getElementById('sM').classList.toggle('hidden',!im);document.getElementById('sO').classList.toggle('hidden',im);document.getElementById('tM').className='flex-1 py-2 font-bold text-sm '+(im?'bg-green-600 text-white':'bg-gray-100 text-gray-600');document.getElementById('tO').className='flex-1 py-2 font-bold text-sm '+(!im?'bg-blue-600 text-white':'bg-gray-100 text-gray-600')}
+async function onPM(id){if(!id){document.getElementById('pI').classList.add('hidden');return}try{const f=await DB.gFin1(parseInt(id));const a=parseFloat(document.getElementById('pA').value)||0;const np=Number(f.total_pending)-a;let sh='';if(np<0)sh='<div class="bg-blue-50 border-2 border-blue-500 p-2 rounded-lg mt-2"><p class="text-blue-800 font-bold text-sm">ADVANCE: '+fmt(Math.abs(np))+'</p></div>';else if(np===0)sh='<div class="bg-green-50 border-2 border-green-500 p-2 rounded-lg mt-2"><p class="text-green-800 font-bold text-sm">Fully Paid!</p></div>';else sh='<div class="bg-yellow-50 border-2 border-yellow-500 p-2 rounded-lg mt-2"><p class="text-yellow-800 font-bold text-sm">Remaining: '+fmt(np)+'</p></div>';document.getElementById('pI').innerHTML=DR('Name',esc(f.name))+DR('Due',fmt(f.total_pending))+DR('Paying','<span class="text-green-600 font-bold">'+fmt(a)+'</span>')+sh;document.getElementById('pI').classList.remove('hidden')}catch(e){}}
+async function doPay(){const mid=parseInt(document.getElementById('pM').value),a=parseFloat(document.getElementById('pA').value),d=document.getElementById('pD').value,mo=document.getElementById('pMo').value,rm=document.getElementById('pR').value;if(!mid||!a||!d){showToast('Error','Fill fields','error');return}const b=document.getElementById('pBtn');b.disabled=true;b.innerHTML='Processing...';try{const fb=await DB.gFin1(mid);const p=await DB.aP({member_id:mid,amount:a,payment_date:d,payment_mode:mo,remarks:rm});const fa=await DB.gFin1(mid);p.fb=fb;p.fa=fa;DB.log(cUser,'Pay:'+fmt(a)+' ID:'+mid+' '+p.receipt_no);showReceipt(p);await refreshDash();showToast('Done',fmt(a)+' recorded!','success');const m=p.members||{};if(CONFIG.AUTO_WHATSAPP&&m.phone&&m.phone.length>=10&&isMob())setTimeout(()=>{window.open('https://wa.me/91'+m.phone+'?text='+encodeURIComponent('*'+CONFIG.SOCIETY_NAME+'*\n*Receipt:* '+p.receipt_no+'\n*Member:* '+m.name+'\n*Amount:* ₹'+p.amount+'\nThank you! 🙏'),'_blank')},500)}catch(e){showToast('Error',e.message,'error');b.disabled=false;b.innerHTML='Save & Receipt'}}
+async function doOI(){const nm=document.getElementById('oN').value.trim(),a=parseFloat(document.getElementById('oA').value),d=document.getElementById('oD').value,mo=document.getElementById('oMo').value,p=document.getElementById('oP').value.trim(),rm=document.getElementById('oR').value.trim();if(!nm||!a||!d||!p){showToast('Error','Fill required','error');return}const b=document.getElementById('oBtn');b.disabled=true;b.innerHTML='Saving...';try{await DB.aOI({source_name:nm,amount:a,income_date:d,payment_mode:mo,purpose:p,remarks:rm,recorded_by:cUser});DB.log(cUser,'OtherIncome:'+nm+' '+fmt(a));closeModal();await refreshDash();showToast('Done',fmt(a)+' added!','success')}catch(e){showToast('Error','Failed','error');b.disabled=false;b.innerHTML='Add Income'}}
+
+// RECEIPT
+function showReceipt(p){const m=p.members||{},fb=p.fb||{},fa=p.fa||{};const nb=Number(fa.total_pending)||0,isAdv=nb<0;let ss='';if(isAdv)ss='<tr class="advance-highlight"><td colspan="2" class="text-center py-3"><div class="text-blue-800 font-bold">ADVANCE '+fmt(Math.abs(nb))+'</div></td></tr>';else if(nb===0)ss='<tr class="bg-green-50"><td colspan="2" class="text-center py-3"><div class="text-green-800 font-bold">FULLY PAID</div></td></tr>';else ss='<tr class="bg-yellow-50"><td colspan="2" class="text-center py-3"><div class="text-yellow-800 font-bold">Remaining: '+fmt(nb)+'</div></td></tr>';showModal('Receipt','<div class="space-y-4"><div class="bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl p-4"><h3 class="text-lg font-bold">✅ Payment Successful!</h3><p class="text-sm opacity-90">'+p.receipt_no+'</p></div><div id="rcpt" class="receipt-container p-6"><div class="watermark">DGST</div><div class="receipt-header"><h2 class="text-2xl font-bold">'+CONFIG.SOCIETY_NAME+'</h2><p>'+CONFIG.SOCIETY_ADDRESS+'</p><p>'+CONFIG.SOCIETY_CITY+'</p><div class="border-t-2 border-black my-3 pt-2"><h3 class="text-xl font-bold">PAYMENT RECEIPT</h3></div></div><div class="receipt-amount">'+fmt(p.amount)+'<div class="text-sm font-normal mt-1">('+n2w(Number(p.amount))+' Rupees Only)</div></div><table class="receipt-table"><tr><th colspan="2" class="text-center bg-gray-800 text-white">Payment Details</th></tr><tr><td class="font-bold">Receipt:</td><td>'+p.receipt_no+'</td></tr><tr><td class="font-bold">Date:</td><td>'+fmtD(p.payment_date)+'</td></tr><tr><td class="font-bold">Mode:</td><td>'+p.payment_mode+'</td></tr><tr><td class="font-bold">Member:</td><td>'+esc(m.name||'-')+' ('+esc(m.designation||'-')+')</td></tr><tr><td class="font-bold">Payee Code:</td><td>'+esc(m.payee_code||'N/A')+'</td></tr></table><table class="receipt-table mt-4"><tr><th colspan="2" class="text-center bg-blue-800 text-white">Financial Summary</th></tr><tr><td>Receivable:</td><td class="text-right">'+fmt(fb.total_receivable)+'</td></tr><tr><td>Previously Paid:</td><td class="text-right">'+fmt(fb.total_paid)+'</td></tr><tr class="bg-green-100"><td class="font-bold">Current Payment:</td><td class="text-right text-green-700 font-bold text-lg">'+fmt(p.amount)+'</td></tr><tr><td>Total Paid:</td><td class="text-right font-bold">'+fmt(fa.total_paid)+'</td></tr>'+ss+'</table>'+(p.remarks?'<p class="mt-3"><b>Remarks:</b> '+esc(p.remarks)+'</p>':'')+'<div class="receipt-footer"><div class="flex justify-between items-center"><div><p class="font-bold text-sm">Received By</p><div class="border-t border-black w-28 mt-6 pt-1 text-center text-xs">Treasurer</div></div><div class="receipt-stamp text-sm">'+CONFIG.SOCIETY_SEAL+'</div><div><p class="font-bold text-sm">Signature</p><div class="border-t border-black w-28 mt-6 pt-1 text-center text-xs">Member</div></div></div></div></div><div class="grid grid-cols-1 md:grid-cols-3 gap-2"><button onclick="doPrint()" class="download-btn text-sm"><i class="fas fa-print mr-1"></i>Print</button><button onclick="doPDF(\''+esc(m.name||'')+'\',\''+p.receipt_no+'\')" class="download-btn text-sm" style="background:#3b82f6"><i class="fas fa-download mr-1"></i>PDF</button><button onclick="doWA(\''+esc(m.name||'')+'\',\''+p.receipt_no+'\',\''+p.amount+'\',\''+p.payment_date+'\',\''+(m.phone||'')+'\')" class="whatsapp-share-btn text-sm"><i class="fab fa-whatsapp mr-1"></i>WhatsApp</button></div><button onclick="closeModal()" class="w-full bg-gray-200 py-2 rounded-xl font-semibold mt-2">Close</button></div>')}
+function doPrint(){const c=document.getElementById('rcpt');if(!c)return;const w=window.open('','_blank');w.document.write('<html><head><title>Receipt</title><style>body{font-family:Courier New,monospace;padding:20px}table{border-collapse:collapse;width:100%;margin:10px 0}th,td{border:1px solid #000;padding:8px}th{background:#f0f0f0}.receipt-header{text-align:center;border-bottom:3px double #000;padding-bottom:15px}.receipt-amount{text-align:center;font-size:24px;font-weight:bold;padding:15px;border:2px solid #28a745;margin:15px 0;background:#d4edda}.receipt-footer{margin-top:30px;padding-top:15px;border-top:2px dashed #000}.receipt-stamp{border:2px dashed red;padding:10px 20px;text-align:center;font-weight:bold;color:red}.watermark{display:none}.advance-highlight{background:#e7f3ff}</style></head><body>'+c.innerHTML+'</body></html>');w.document.close();w.print()}
+function doPDF(n,r){const el=document.getElementById('rcpt');if(!el)return;html2canvas(el,{scale:2.5,backgroundColor:'#fff'}).then(c=>{const{jsPDF}=window.jspdf;const pdf=new jsPDF('p','mm','a4');const pw=pdf.internal.pageSize.getWidth(),iw=pw-20,ih=c.height*iw/c.width;pdf.addImage(c.toDataURL('image/png'),'PNG',10,10,iw,Math.min(ih,pdf.internal.pageSize.getHeight()-20));pdf.save('Receipt_'+r+'.pdf');showToast('Done','PDF saved!','success')}).catch(()=>showToast('Error','PDF failed','error'))}
+function doWA(n,r,a,d,ph){const msg='*'+CONFIG.SOCIETY_NAME+'*\n*Receipt:* '+r+'\n*Member:* '+n+'\n*Amount:* ₹'+a+'\n*Date:* '+fmtD(d)+'\nThank you! 🙏';window.open((ph&&ph.length>=10?'https://wa.me/91'+ph:'https://wa.me/')+'?text='+encodeURIComponent(msg),'_blank')}
+
+// REPORTS
+async function showPaymentReports(){showModal('Payments','<div class="text-center py-8"><div class="spinner"></div></div>');try{const ps=await DB.gP({});const t=ps.reduce((s,p)=>s+Number(p.amount),0);document.getElementById('modalContent').innerHTML='<div class="space-y-3"><div class="bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-xl p-4"><h3 class="text-lg font-bold">Payments (<span id="prC">'+ps.length+'</span>) | <span id="prT">'+fmt(t)+'</span></h3></div><div class="date-filter-bar"><label class="text-xs font-semibold">From:</label><input type="date" id="prF" onchange="fPR()"><label class="text-xs font-semibold">To:</label><input type="date" id="prT2" onchange="fPR()"><button onclick="document.getElementById(\'prF\').value=\'\';document.getElementById(\'prT2\').value=\'\';fPR()" class="bg-gray-200 text-gray-700">Clear</button><button onclick="setDP(\'pr\',\'tm\')" class="bg-indigo-100 text-indigo-700">This Month</button></div><div class="relative"><i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i><input type="text" id="prS" placeholder="Search..." class="w-full pl-9 p-2 border-2 border-gray-300 rounded-xl text-sm" oninput="fPR()"></div><div class="overflow-x-auto rounded-lg border max-h-[42vh] overflow-y-auto"><table class="min-w-full bg-white text-sm"><thead class="sticky top-0 z-10"><tr class="bg-gray-100"><th class="py-2 px-2 text-left">Date</th><th class="py-2 px-2 text-left">Member</th><th class="py-2 px-2 text-left hidden md:table-cell">Receipt</th><th class="py-2 px-2 text-right">Amount</th><th class="py-2 px-2">Mode</th></tr></thead><tbody id="prTB">'+ps.map(p=>'<tr class="border-b hover:bg-orange-50 pr-r" data-n="'+(p.members?.name||'').toLowerCase()+'" data-r="'+(p.receipt_no||'').toLowerCase()+'" data-a="'+p.amount+'" data-d="'+(p.payment_date||'')+'"><td class="py-2 px-2 whitespace-nowrap">'+fmtD(p.payment_date)+'</td><td class="py-2 px-2 font-semibold">'+esc(p.members?.name||'-')+'</td><td class="py-2 px-2 hidden md:table-cell text-gray-400 text-xs">'+p.receipt_no+'</td><td class="py-2 px-2 text-right text-green-600 font-bold">'+fmt(p.amount)+'</td><td class="py-2 px-2 text-xs">'+(p.payment_mode||'')+'</td></tr>').join('')+'</tbody></table></div><button onclick="closeModal()" class="w-full bg-gray-200 py-2 rounded-lg font-semibold mt-2">Close</button></div>'}catch(e){showToast('Error','Failed','error')}}
+function setDP(px,pr){const n=new Date();let f,t;if(pr==='tm'){f=new Date(n.getFullYear(),n.getMonth(),1);t=new Date(n.getFullYear(),n.getMonth()+1,0)}else{f=new Date(n.getFullYear(),n.getMonth()-1,1);t=new Date(n.getFullYear(),n.getMonth(),0)}document.getElementById(px+'F').value=f.toISOString().split('T')[0];document.getElementById(px+'T2').value=t.toISOString().split('T')[0];if(px==='pr')fPR();else fWR()}
+function fPR(){const q=(document.getElementById('prS').value||'').toLowerCase(),df=document.getElementById('prF').value,dt=document.getElementById('prT2').value;let v=0,t=0;document.querySelectorAll('.pr-r').forEach(r=>{const ok=(r.dataset.n.includes(q)||r.dataset.r.includes(q))&&(!df||r.dataset.d>=df)&&(!dt||r.dataset.d<=dt);r.style.display=ok?'':'none';if(ok){v++;t+=Number(r.dataset.a)}});document.getElementById('prC').textContent=v;document.getElementById('prT').textContent=fmt(t)}
+async function showWithdrawalReports(){showModal('Withdrawals','<div class="text-center py-8"><div class="spinner"></div></div>');try{const ws=await DB.gW({});const rl=ws.filter(w=>Number(w.amount)>0);const t=rl.reduce((s,w)=>s+Number(w.amount),0);document.getElementById('modalContent').innerHTML='<div class="space-y-3"><div class="bg-gradient-to-r from-pink-500 to-rose-600 text-white rounded-xl p-4"><h3 class="text-lg font-bold">Withdrawals (<span id="wrC">'+rl.length+'</span>) | <span id="wrT">'+fmt(t)+'</span></h3></div><div class="date-filter-bar"><label class="text-xs font-semibold">From:</label><input type="date" id="wrF" onchange="fWR()"><label class="text-xs font-semibold">To:</label><input type="date" id="wrT2" onchange="fWR()"><button onclick="document.getElementById(\'wrF\').value=\'\';document.getElementById(\'wrT2\').value=\'\';fWR()" class="bg-gray-200 text-gray-700">Clear</button></div><div class="relative"><i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i><input type="text" id="wrS" placeholder="Search..." class="w-full pl-9 p-2 border-2 border-gray-300 rounded-xl text-sm" oninput="fWR()"></div><div class="overflow-x-auto rounded-lg border max-h-[42vh] overflow-y-auto"><table class="min-w-full bg-white text-sm"><thead class="sticky top-0 z-10"><tr class="bg-gray-100"><th class="py-2 px-2 text-left">Date</th><th class="py-2 px-2 text-right">Amount</th><th class="py-2 px-2 text-left">Purpose</th><th class="py-2 px-2 text-left">Category</th></tr></thead><tbody id="wrTB">'+rl.map(w=>'<tr class="border-b hover:bg-red-50 wr-r" data-p="'+(w.purpose||'').toLowerCase()+'" data-a="'+w.amount+'" data-d="'+(w.withdrawal_date||'')+'"><td class="py-2 px-2 whitespace-nowrap">'+fmtD(w.withdrawal_date)+'</td><td class="py-2 px-2 text-right text-red-600 font-bold">'+fmt(w.amount)+'</td><td class="py-2 px-2 font-semibold">'+esc(w.purpose)+'</td><td class="py-2 px-2 text-xs">'+esc(w.category||'-')+'</td></tr>').join('')+'</tbody></table></div><button onclick="closeModal()" class="w-full bg-gray-200 py-2 rounded-lg font-semibold mt-2">Close</button></div>'}catch(e){showToast('Error','Failed','error')}}
+function fWR(){const q=(document.getElementById('wrS').value||'').toLowerCase(),df=document.getElementById('wrF').value,dt=document.getElementById('wrT2').value;let v=0,t=0;document.querySelectorAll('.wr-r').forEach(r=>{const ok=r.dataset.p.includes(q)&&(!df||r.dataset.d>=df)&&(!dt||r.dataset.d<=dt);r.style.display=ok?'':'none';if(ok){v++;t+=Number(r.dataset.a)}});document.getElementById('wrC').textContent=v;document.getElementById('wrT').textContent=fmt(t)}
+async function showPendingPayments(){showModal('Pending','<div class="text-center py-8"><div class="spinner"></div></div>');try{const f=await DB.gFin();const p=f.filter(m=>m.status==='active'&&Number(m.total_pending)>0).sort((a,b)=>Number(b.total_pending)-Number(a.total_pending));const t=p.reduce((s,m)=>s+Number(m.total_pending),0);document.getElementById('modalContent').innerHTML='<div class="space-y-3"><div class="bg-gradient-to-r from-red-500 to-pink-600 text-white rounded-xl p-4"><h3 class="text-lg font-bold">Pending ('+p.length+') | '+fmt(t)+'</h3></div>'+(p.length?'<div class="overflow-x-auto rounded-lg border max-h-[50vh] overflow-y-auto"><table class="min-w-full bg-white text-sm"><thead class="sticky top-0 z-10"><tr class="bg-gray-100"><th class="py-2 px-2 text-left">Name</th><th class="py-2 px-2 text-left hidden md:table-cell">Designation</th><th class="py-2 px-2 text-right">Paid</th><th class="py-2 px-2 text-right">Pending</th><th class="py-2 px-2 text-center">Act</th></tr></thead><tbody>'+p.map(m=>'<tr class="border-b hover:bg-red-50"><td class="py-2 px-2 font-semibold">'+esc(m.name)+'</td><td class="py-2 px-2 hidden md:table-cell text-gray-500">'+esc(m.designation)+'</td><td class="py-2 px-2 text-right text-green-600">'+fmt(m.total_paid)+'</td><td class="py-2 px-2 text-right text-red-600 font-bold">'+fmt(m.total_pending)+'</td><td class="py-2 px-2 text-center">'+(isA()?'<button onclick="qP('+m.id+')" class="action-btn" style="background:#10b981;color:white"><i class="fas fa-rupee-sign"></i></button> ':'')+(m.phone?'<button onclick="sendR('+m.id+')" class="action-btn" style="background:#25D366;color:white"><i class="fab fa-whatsapp"></i></button>':'')+'</td></tr>').join('')+'</tbody></table></div>':'<div class="text-center py-10 text-green-600"><i class="fas fa-check-circle text-4xl mb-2 block"></i><p class="font-semibold">All clear!</p></div>')+'<button onclick="closeModal()" class="w-full bg-gray-200 py-2 rounded-lg font-semibold mt-2">Close</button></div>'}catch(e){showToast('Error','Failed','error')}}
+async function sendR(id){try{const f=await DB.gFin1(id);if(!f.phone)return;window.open('https://wa.me/91'+f.phone+'?text='+encodeURIComponent('Dear '+f.name+', '+fmt(f.total_pending)+' pending. - '+CONFIG.SOCIETY_NAME),'_blank')}catch(e){}}
+
+// WITHDRAWAL
+async function showMainAccountWithdrawalModal(){if(!isA())return;const b=await DB.gBal();showModal('Withdrawal','<div class="space-y-4"><div class="bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-xl p-4"><h3 class="text-lg font-bold">Withdrawal</h3><p class="text-sm opacity-90">Balance: '+fmt(b)+'</p></div><div class="grid grid-cols-1 md:grid-cols-2 gap-3"><div><label class="block text-sm font-semibold mb-1">Amount ₹ *</label><input type="number" id="wA" class="w-full p-2 border-2 border-gray-300 rounded-lg" min="1"></div><div><label class="block text-sm font-semibold mb-1">Date *</label><input type="date" id="wD" class="w-full p-2 border-2 border-gray-300 rounded-lg" value="'+new Date().toISOString().split('T')[0]+'"></div><div><label class="block text-sm font-semibold mb-1">Purpose *</label><input type="text" id="wP" class="w-full p-2 border-2 border-gray-300 rounded-lg"></div><div><label class="block text-sm font-semibold mb-1">Category</label><select id="wC" class="w-full p-2 border-2 border-gray-300 rounded-lg"><option>Expense</option><option>Welfare Scheme</option><option>Investment</option><option>Emergency</option></select></div><div><label class="block text-sm font-semibold mb-1">Approved By</label><input type="text" id="wAB" class="w-full p-2 border-2 border-gray-300 rounded-lg"></div><div><label class="block text-sm font-semibold mb-1">Remarks</label><textarea id="wR" class="w-full p-2 border-2 border-gray-300 rounded-lg" rows="2"></textarea></div></div><div class="flex gap-3"><button onclick="doWdr()" id="wBtn" class="flex-1 bg-amber-600 text-white py-2 rounded-xl font-bold">Save</button><button onclick="closeModal()" class="flex-1 bg-gray-200 py-2 rounded-xl font-semibold">Cancel</button></div></div>')}
+async function doWdr(){const a=parseFloat(document.getElementById('wA').value),d=document.getElementById('wD').value,p=document.getElementById('wP').value.trim(),c=document.getElementById('wC').value,ab=document.getElementById('wAB').value.trim(),r=document.getElementById('wR').value;if(!a||!d||!p){showToast('Error','Fill required','error');return}const b=document.getElementById('wBtn');b.disabled=true;b.innerHTML='Saving...';try{await DB.aW({amount:a,withdrawal_date:d,purpose:p,category:c,approved_by:ab||cUser,remarks:r});DB.log(cUser,'Withdrawal:'+fmt(a)+' for '+p);closeModal();await refreshDash();showToast('Done',fmt(a)+' withdrawn!','success')}catch(e){showToast('Error','Failed','error');b.disabled=false;b.innerHTML='Save'}}
+
+// OTHER INCOME REPORT
+async function showOtherIncomeReport(){showModal('Other Income','<div class="text-center py-8"><div class="spinner"></div></div>');try{const inc=await DB.gOI();const t=inc.reduce((s,i)=>s+Number(i.amount||0),0);document.getElementById('modalContent').innerHTML='<div class="space-y-3"><div class="bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl p-4"><h3 class="text-lg font-bold">Other Income ('+inc.length+') | '+fmt(t)+'</h3></div>'+(inc.length?'<div class="overflow-x-auto rounded-lg border max-h-[42vh] overflow-y-auto"><table class="min-w-full bg-white text-sm"><thead class="sticky top-0 z-10"><tr class="bg-gray-100"><th class="py-2 px-2 text-left">Date</th><th class="py-2 px-2 text-left">Source</th><th class="py-2 px-2 text-left">Purpose</th><th class="py-2 px-2 text-right">Amount</th></tr></thead><tbody>'+inc.map(i=>'<tr class="border-b hover:bg-cyan-50"><td class="py-2 px-2">'+fmtD(i.income_date||i.created_at)+'</td><td class="py-2 px-2 font-semibold">'+esc(i.source_name||'-')+'</td><td class="py-2 px-2">'+esc(i.purpose||'-')+'</td><td class="py-2 px-2 text-right text-cyan-700 font-bold">'+fmt(i.amount)+'</td></tr>').join('')+'</tbody></table></div>':'<div class="text-center py-8 text-gray-400">No other income yet</div>')+(isA()?'<button onclick="closeModal();setTimeout(()=>{showQPM();setTimeout(()=>swPT(\'o\'),200)},300)" class="w-full bg-cyan-600 text-white py-2 rounded-xl font-semibold"><i class="fas fa-plus-circle mr-1"></i>Add</button>':'')+'<button onclick="closeModal()" class="w-full bg-gray-200 py-2 rounded-lg font-semibold">Close</button></div>'}catch(e){showToast('Error','Failed','error')}}
+
+// ACTIVITY LOG
+async function showActivityLog(){showModal('Activity Log','<div class="text-center py-8"><div class="spinner"></div></div>');try{const logs=await DB.gLog(200);document.getElementById('modalContent').innerHTML='<div class="space-y-3"><div class="bg-gradient-to-r from-slate-600 to-gray-800 text-white rounded-xl p-4"><h3 class="text-lg font-bold">Activity Log ('+logs.length+')</h3></div>'+(logs.length?'<div class="overflow-x-auto rounded-lg border max-h-[52vh] overflow-y-auto"><table class="min-w-full bg-white text-sm"><thead class="sticky top-0 z-10"><tr class="bg-gray-100"><th class="py-2 px-3 text-left">Time</th><th class="py-2 px-3 text-left">User</th><th class="py-2 px-3 text-left">Action</th></tr></thead><tbody>'+logs.map(l=>{const dt=l.created_at?new Date(l.created_at):new Date();return'<tr class="border-b hover:bg-gray-50"><td class="py-2 px-3 whitespace-nowrap text-gray-500 text-xs">'+dt.toLocaleDateString('en-IN',{day:'2-digit',month:'short'})+' '+dt.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true})+'</td><td class="py-2 px-3"><span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-semibold">'+esc(l.username||'-')+'</span></td><td class="py-2 px-3">'+esc(l.action||'-')+'</td></tr>'}).join('')+'</tbody></table></div>':'<div class="text-center py-8 text-gray-400">No logs</div>')+'<button onclick="closeModal()" class="w-full bg-gray-200 py-2 rounded-lg font-semibold">Close</button></div>'}catch(e){showToast('Error','Failed','error')}}
+
+// BALANCE SHEET
+async function showBalanceSheet(){showModal('Balance Sheet','<div class="text-center py-8"><div class="spinner"></div></div>');try{const[allP,allW,fn,oi,bl]=await Promise.all([DB.gP({}),DB.gW({}),DB.gFin(),DB.gOI(),DB.gBal()]);const tMI=allP.reduce((s,p)=>s+Number(p.amount),0);const tOI=oi.reduce((s,i)=>s+Number(i.amount||0),0);const tI=tMI+tOI;const rW=allW.filter(w=>Number(w.amount)>0);const tE=rW.reduce((s,w)=>s+Number(w.amount),0);const net=tI-tE;const act=fn.filter(m=>m.status==='active');const tPend=act.reduce((s,m)=>s+Math.max(0,Number(m.total_pending)),0);const td=new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'});const incSrc={'Member Contributions':tMI};oi.forEach(i=>{const s=i.source_name||'Unknown';incSrc[s]=(incSrc[s]||0)+Number(i.amount||0)});const expCat={};rW.forEach(w=>{const c=w.category||'Other';expCat[c]=(expCat[c]||0)+Number(w.amount)});document.getElementById('modalContent').innerHTML='<div class="space-y-4"><div class="bg-gradient-to-r from-emerald-600 to-teal-700 text-white rounded-xl p-4"><h3 class="text-lg font-bold">Balance Sheet & Audit</h3></div><div id="bsP" class="bg-white rounded-xl border-2 border-gray-300 p-5"><div class="text-center border-b-2 border-gray-800 pb-4 mb-4"><h2 class="text-xl font-bold">'+CONFIG.SOCIETY_NAME+'</h2><p class="text-sm text-gray-600">'+CONFIG.SOCIETY_ADDRESS+', '+CONFIG.SOCIETY_CITY+'</p><h3 class="text-lg font-bold text-emerald-700 mt-2">BALANCE SHEET</h3><p class="text-xs text-gray-500">'+td+'</p></div><div class="grid grid-cols-3 gap-3 mb-4"><div class="bg-green-50 border-2 border-green-300 rounded-xl p-4 text-center"><p class="text-xs text-green-600 font-semibold">INCOME</p><p class="text-2xl font-bold text-green-800">'+fmt(tI)+'</p></div><div class="bg-red-50 border-2 border-red-300 rounded-xl p-4 text-center"><p class="text-xs text-red-600 font-semibold">EXPENSE</p><p class="text-2xl font-bold text-red-800">'+fmt(tE)+'</p></div><div class="bg-blue-50 border-2 border-blue-300 rounded-xl p-4 text-center"><p class="text-xs text-blue-600 font-semibold">BALANCE</p><p class="text-2xl font-bold text-blue-800">'+fmt(net)+'</p></div></div><h4 class="font-bold text-green-800 mt-4 mb-2 border-b-2 border-green-300 pb-1">INCOME</h4><table class="balance-sheet-table"><thead><tr><th class="text-left">Source</th><th class="text-right">Amount</th></tr></thead><tbody>'+Object.entries(incSrc).map(([s,a])=>'<tr class="income-row"><td>'+esc(s)+'</td><td class="text-right text-green-700 font-semibold">'+fmt(a)+'</td></tr>').join('')+'<tr class="total-row"><td>TOTAL</td><td class="text-right text-green-800 text-lg">'+fmt(tI)+'</td></tr></tbody></table><h4 class="font-bold text-red-800 mt-4 mb-2 border-b-2 border-red-300 pb-1">EXPENSES</h4><table class="balance-sheet-table"><thead><tr><th class="text-left">Purpose</th><th class="text-left">Category</th><th class="text-right">Amount</th></tr></thead><tbody>'+(rW.length?rW.map(w=>'<tr class="expense-row"><td>'+esc(w.purpose)+'</td><td class="text-xs">'+esc(w.category||'-')+'</td><td class="text-right text-red-700 font-semibold">'+fmt(w.amount)+'</td></tr>').join(''):'<tr><td colspan="3" class="text-center text-gray-400">No expenses</td></tr>')+'<tr class="total-row"><td colspan="2">TOTAL</td><td class="text-right text-red-800 text-lg">'+fmt(tE)+'</td></tr></tbody></table><div class="mt-6 pt-4 border-t-2 border-gray-800"><div class="bg-emerald-50 border-2 border-emerald-400 rounded-xl p-4 text-center"><h3 class="text-lg font-bold text-emerald-800">BALANCE: '+fmt(net)+'</h3></div></div><div class="mt-6 grid grid-cols-3 gap-4 text-center text-sm"><div><div class="border-t-2 border-black mt-12 pt-2">Treasurer</div></div><div><div class="border-t-2 border-black mt-12 pt-2">Secretary</div></div><div><div class="border-t-2 border-black mt-12 pt-2">Auditor</div></div></div></div><div class="grid grid-cols-2 gap-2"><button onclick="printBS()" class="download-btn text-sm"><i class="fas fa-print mr-1"></i>Print</button><button onclick="expBSXL()" class="excel-export-btn text-sm justify-center w-full"><i class="fas fa-file-excel mr-1"></i>Excel</button></div><button onclick="closeModal()" class="w-full bg-gray-200 py-2 rounded-lg font-semibold">Close</button></div>'}catch(e){console.error(e);showToast('Error','Failed','error')}}
+function printBS(){const c=document.getElementById('bsP');if(!c)return;const w=window.open('','_blank');w.document.write('<html><head><title>Balance Sheet</title><style>body{font-family:Segoe UI,sans-serif;padding:20px;font-size:12px}table{width:100%;border-collapse:collapse;margin:8px 0}th,td{padding:8px;border:1px solid #ccc;font-size:11px}th{background:#1e3a5f;color:white}.total-row{background:#d4edda;font-weight:bold}.expense-row{background:#fff3e0}.income-row{background:#e8f5e9}</style></head><body>'+c.innerHTML+'</body></html>');w.document.close();w.print()}
+async function expBSXL(){try{const[allP,allW,fn,oi]=await Promise.all([DB.gP({}),DB.gW({}),DB.gFin(),DB.gOI()]);const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet([{Type:'Member Contributions',Amount:allP.reduce((s,p)=>s+Number(p.amount),0)},{Type:'Other Income',Amount:oi.reduce((s,i)=>s+Number(i.amount||0),0)},{Type:'Total Expenses',Amount:allW.filter(w=>Number(w.amount)>0).reduce((s,w)=>s+Number(w.amount),0)}]),'Summary');XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(fn.map(m=>({ID:m.id,Name:m.name,Designation:m.designation,Status:m.status,Paid:m.total_paid,Pending:m.total_pending}))),'Members');XLSX.writeFile(wb,'DGST_Audit_'+new Date().toISOString().split('T')[0]+'.xlsx');showToast('Done','Excel!','success')}catch(e){showToast('Error','Failed','error')}}
+
+// MONTHLY SUMMARY
+async function showMonthlySummaryPDF(){showModal('Monthly Summary','<div class="text-center py-8"><div class="spinner"></div></div>');try{const[allP,allW,fn]=await Promise.all([DB.gP({}),DB.gW({}),DB.gFin()]);const ms=new Set();allP.forEach(p=>{if(p.payment_date)ms.add(p.payment_date.substring(0,7))});const sorted=[...ms].sort().reverse();const cur=getYM();window._msd={allP,allW,fn};document.getElementById('modalContent').innerHTML='<div class="space-y-4"><div class="bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl p-4"><h3 class="text-lg font-bold">Monthly Summary</h3></div><div><label class="block text-sm font-semibold mb-1">Month:</label><select id="msM" class="w-full p-2 border-2 border-gray-300 rounded-lg" onchange="genMS()">'+(sorted.length?sorted.map(m=>'<option value="'+m+'" '+(m===cur?'selected':'')+'>'+m+'</option>').join(''):'<option value="'+cur+'">'+cur+'</option>')+'</select></div><div id="msC"></div><button onclick="closeModal()" class="w-full bg-gray-200 py-2 rounded-lg font-semibold">Close</button></div>';genMS()}catch(e){showToast('Error','Failed','error')}}
+function genMS(){const sel=document.getElementById('msM').value;if(!sel||!window._msd)return;const{allP,allW,fn}=window._msd;const mP=allP.filter(p=>p.payment_date&&p.payment_date.startsWith(sel));const mW=allW.filter(w=>w.withdrawal_date&&w.withdrawal_date.startsWith(sel)&&Number(w.amount)>0);const mI=mP.reduce((s,p)=>s+Number(p.amount),0);const mE=mW.reduce((s,w)=>s+Number(w.amount),0);const act=fn.filter(m=>m.status==='active');const pIds=[...new Set(mP.map(p=>p.member_id))];const unpaid=act.filter(m=>!pIds.includes(m.id));document.getElementById('msC').innerHTML='<div id="msP" class="bg-white rounded-xl border-2 border-gray-300 p-5"><div class="text-center border-b-2 border-gray-800 pb-3 mb-3"><h2 class="text-lg font-bold">'+CONFIG.SOCIETY_NAME+'</h2><h3 class="text-base font-bold text-rose-700 mt-1">'+sel+'</h3></div><div class="grid grid-cols-3 gap-3 mb-3 text-center"><div class="bg-green-50 border border-green-300 rounded-lg p-3"><p class="text-xs text-green-600">Income</p><p class="text-lg font-bold text-green-800">'+fmt(mI)+'</p></div><div class="bg-red-50 border border-red-300 rounded-lg p-3"><p class="text-xs text-red-600">Expense</p><p class="text-lg font-bold text-red-800">'+fmt(mE)+'</p></div><div class="bg-blue-50 border border-blue-300 rounded-lg p-3"><p class="text-xs text-blue-600">Net</p><p class="text-lg font-bold text-blue-800">'+fmt(mI-mE)+'</p></div></div><h4 class="font-bold text-sm mb-1">✅ Paid ('+mP.length+')</h4>'+(mP.length?'<table class="balance-sheet-table text-xs"><thead><tr><th>Date</th><th>Member</th><th>Receipt</th><th class="text-right">Amount</th></tr></thead><tbody>'+mP.map(p=>'<tr><td>'+fmtD(p.payment_date)+'</td><td class="font-semibold">'+esc(p.members?.name||'-')+'</td><td>'+p.receipt_no+'</td><td class="text-right font-semibold">'+fmt(p.amount)+'</td></tr>').join('')+'<tr class="total-row"><td colspan="3">TOTAL</td><td class="text-right">'+fmt(mI)+'</td></tr></tbody></table>':'<p class="text-gray-400 text-xs">No payments</p>')+'<h4 class="font-bold text-sm mb-1 mt-3 text-red-700">❌ Unpaid ('+unpaid.length+')</h4>'+(unpaid.length?'<table class="balance-sheet-table text-xs"><thead><tr><th>Name</th><th>Designation</th><th class="text-right">Pending</th></tr></thead><tbody>'+unpaid.map(m=>'<tr><td class="font-semibold">'+esc(m.name)+'</td><td>'+esc(m.designation)+'</td><td class="text-right text-red-600 font-semibold">'+fmt(m.total_pending)+'</td></tr>').join('')+'</tbody></table>':'<p class="text-green-600 text-sm font-semibold">All paid!</p>')+'</div><button onclick="pMS()" class="w-full mt-2 download-btn text-sm"><i class="fas fa-print mr-1"></i>Print</button>'}
+function pMS(){const c=document.getElementById('msP');if(!c)return;const w=window.open('','_blank');w.document.write('<html><head><title>Monthly</title><style>body{font-family:Segoe UI,sans-serif;padding:15px;font-size:11px}table{width:100%;border-collapse:collapse;margin:6px 0}th,td{padding:5px 6px;border:1px solid #ccc;font-size:10px}th{background:#1e3a5f;color:white}.total-row{background:#d4edda;font-weight:bold}</style></head><body>'+c.innerHTML+'</body></html>');w.document.close();w.print()}
+
+// STATUS VIEWS
+function showRetiringSoon(){if(!_retSoon.length){showToast('Info','None retiring soon','info');return}showModal('Retiring Soon','<div class="space-y-3"><div class="bg-gradient-to-r from-yellow-500 to-amber-600 text-white rounded-xl p-4"><h3 class="text-lg font-bold">Retiring Soon ('+_retSoon.length+')</h3></div><div class="overflow-x-auto rounded-lg border"><table class="min-w-full bg-white text-sm"><thead><tr class="bg-gray-100"><th class="py-2 px-3">Name</th><th class="py-2 px-3">Designation</th><th class="py-2 px-3">Retirement</th><th class="py-2 px-3">Act</th></tr></thead><tbody>'+_retSoon.map(m=>'<tr class="border-b hover:bg-yellow-50"><td class="py-2 px-3 font-semibold">'+esc(m.name)+'</td><td class="py-2 px-3">'+esc(m.designation)+'</td><td class="py-2 px-3 text-yellow-700 font-semibold">'+fmtD(m.retirement_date)+'</td><td class="py-2 px-3"><button onclick="viewMD('+m.id+')" class="action-btn edit-btn"><i class="fas fa-eye"></i></button></td></tr>').join('')+'</tbody></table></div><button onclick="closeModal()" class="w-full bg-gray-200 py-2 rounded-lg font-semibold">Close</button></div>')}
+async function showSV(st,title){showModal(title,'<div class="text-center py-8"><div class="spinner"></div></div>');try{const ms=await DB.gM({status:st});document.getElementById('modalContent').innerHTML='<div class="space-y-3"><div class="bg-gradient-to-r from-gray-500 to-gray-700 text-white rounded-xl p-4"><h3 class="text-lg font-bold">'+title+' ('+ms.length+')</h3></div>'+(ms.length?'<div class="overflow-x-auto rounded-lg border max-h-[52vh] overflow-y-auto"><table class="min-w-full bg-white text-sm"><thead><tr class="bg-gray-100"><th class="py-2 px-3">ID</th><th class="py-2 px-3 text-left">Name</th><th class="py-2 px-3 text-left">Designation</th><th class="py-2 px-3">Act</th></tr></thead><tbody>'+ms.map(m=>'<tr class="border-b hover:bg-gray-50"><td class="py-2 px-3">'+m.id+'</td><td class="py-2 px-3 font-semibold">'+esc(m.name)+'</td><td class="py-2 px-3">'+esc(m.designation)+'</td><td class="py-2 px-3 text-center"><button onclick="viewMD('+m.id+')" class="action-btn edit-btn"><i class="fas fa-eye"></i></button>'+(isA()?' <button onclick="showEF('+m.id+')" class="action-btn edit-btn ml-1"><i class="fas fa-edit"></i></button>':'')+'</td></tr>').join('')+'</tbody></table></div>':'<div class="text-center py-8 text-gray-400">None</div>')+'<button onclick="closeModal()" class="w-full bg-gray-200 py-2 rounded-lg font-semibold">Close</button></div>'}catch(e){showToast('Error','Failed','error')}}
+function showParkedMembers(){showSV('parked','Parked Members')}
+function showRetiredMembersDetails(){showSV('retired','Retired Members')}
+function showTransferredMembers(){showSV('transferred','Transferred Members')}
+function showWelfareSchemes(){const sc=Object.values(CONFIG.WELFARE_SCHEMES);showModal('Welfare','<div class="space-y-4"><div class="bg-gradient-to-r from-pink-500 to-rose-600 text-white rounded-xl p-4"><h3 class="text-lg font-bold">कल्याण योजनाएं</h3></div>'+sc.map(s=>'<div class="border rounded-xl p-4 hover:shadow-md"><div class="flex items-start gap-3"><div class="w-10 h-10 bg-'+s.color+'-100 rounded-full flex items-center justify-center flex-shrink-0"><i class="fas '+s.icon+' text-'+s.color+'-600"></i></div><div><h4 class="font-bold">'+s.name+'</h4><p class="text-gray-600 text-sm mt-1">'+s.description+'</p>'+(s.amount?'<span class="mt-2 inline-block px-3 py-1 bg-green-100 text-green-800 font-semibold rounded-full text-sm">'+fmt(s.amount)+'</span>':'')+'</div></div></div>').join('')+'<button onclick="closeModal()" class="w-full bg-gray-200 py-2 rounded-lg font-semibold">Close</button></div>')}
+function showMessagingPanel(){showModal('WhatsApp','<div class="space-y-4"><div class="bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-xl p-4"><h3 class="text-lg font-bold"><i class="fab fa-whatsapp mr-2"></i>WhatsApp</h3></div><div class="border rounded-xl p-4"><textarea id="cMsg" class="w-full p-2 border-2 border-gray-300 rounded-lg" rows="4" placeholder="Type message..."></textarea><button onclick="const m=document.getElementById(\'cMsg\').value;if(m)window.open(\'https://wa.me/?text=\'+encodeURIComponent(m),\'_blank\')" class="w-full mt-2 bg-green-600 text-white py-2 rounded-xl font-semibold"><i class="fab fa-whatsapp mr-1"></i>Send</button></div><button onclick="closeModal()" class="w-full bg-gray-200 py-2 rounded-lg font-semibold">Close</button></div>')}
+
+// EXPORT
+async function expXL(){try{const d=await DB.gFin();const ws=XLSX.utils.json_to_sheet(d.map(m=>({ID:m.id,Name:m.name,Designation:m.designation,Payee_Code:m.payee_code||'',Phone:m.phone||'',Join:m.join_date,Status:m.status,Receivable:m.total_receivable,Paid:m.total_paid,Pending:m.total_pending})));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Members');XLSX.writeFile(wb,'DGST_Members_'+new Date().toISOString().split('T')[0]+'.xlsx');showToast('Done','Exported!','success')}catch(e){showToast('Error','Failed','error')}}
+async function expBackup(){try{const[m,p,w]=await Promise.all([DB.gM({}),DB.gP({}),DB.gW({})]);const b=new Blob([JSON.stringify({date:new Date().toISOString(),members:m,payments:p,withdrawals:w},null,2)],{type:'application/json'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download='DGST_Backup_'+new Date().toISOString().split('T')[0]+'.json';document.body.appendChild(a);a.click();document.body.removeChild(a);showToast('Done','Backup!','success')}catch(e){showToast('Error','Failed','error')}}
+function showExcelExportOptions(){showModal('Export','<div class="space-y-4"><div class="grid grid-cols-1 md:grid-cols-3 gap-4"><div onclick="expXL();closeModal()" class="border-2 border-dashed rounded-xl p-6 text-center cursor-pointer hover:border-blue-500 hover:bg-blue-50"><i class="fas fa-users text-3xl text-blue-500 mb-2"></i><h4 class="font-bold text-sm">Members</h4></div><div onclick="expBackup();closeModal()" class="border-2 border-dashed rounded-xl p-6 text-center cursor-pointer hover:border-purple-500 hover:bg-purple-50"><i class="fas fa-database text-3xl text-purple-500 mb-2"></i><h4 class="font-bold text-sm">Backup</h4></div><div onclick="expBSXL();closeModal()" class="border-2 border-dashed rounded-xl p-6 text-center cursor-pointer hover:border-emerald-500 hover:bg-emerald-50"><i class="fas fa-balance-scale text-3xl text-emerald-500 mb-2"></i><h4 class="font-bold text-sm">Audit</h4></div></div><button onclick="closeModal()" class="w-full bg-gray-200 py-2 rounded-lg font-semibold mt-3">Close</button></div>')}
+function showBulkImportModal(){if(!isA())return;showModal('Bulk Import','<div class="space-y-4"><div class="bg-yellow-50 border-l-4 border-yellow-400 p-3 rounded-r-xl text-sm"><b>Columns:</b> name, designation, payee_code, phone, join_date, retirement_date</div><button onclick="dlTmpl()" class="w-full bg-indigo-100 text-indigo-700 py-2 rounded-xl font-semibold text-sm">Download Template</button><div class="border-2 border-dashed border-indigo-300 rounded-xl p-8 text-center cursor-pointer hover:bg-indigo-50" onclick="document.getElementById(\'bF\').click()"><i class="fas fa-file-excel text-5xl text-indigo-400 mb-3"></i><p class="font-semibold">Select Excel</p><input type="file" id="bF" accept=".xlsx,.xls" class="hidden" onchange="procB(event)"></div><div id="bPrev" class="hidden"></div><button onclick="closeModal()" class="w-full bg-gray-200 py-2 rounded-lg font-semibold">Cancel</button></div>')}
+function dlTmpl(){const ws=XLSX.utils.json_to_sheet([{name:'Ramesh',designation:'Clerk',payee_code:'PAY001',phone:'9876543210',join_date:'2024-01-01',retirement_date:'2030-06-30'}]);const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Members');XLSX.writeFile(wb,'DGST_Template.xlsx')}
+function procB(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=function(ev){try{const wb=XLSX.read(ev.target.result,{type:'binary'});const data=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);const valid=data.filter(d=>d.name&&d.designation);document.getElementById('bPrev').classList.remove('hidden');document.getElementById('bPrev').innerHTML='<div class="bg-gray-50 rounded-xl p-4"><h4 class="font-bold text-sm mb-2">'+valid.length+' valid</h4><button onclick="doBulk()" id="bBtn" class="w-full mt-2 bg-green-600 text-white py-2 rounded-xl font-bold">Import '+valid.length+'</button></div>';window._bD=valid}catch(ex){showToast('Error','Invalid','error')}};r.readAsBinaryString(f)}
+async function doBulk(){if(!window._bD)return;const btn=document.getElementById('bBtn');btn.disabled=true;btn.innerHTML='Importing...';let ok=0;for(const d of window._bD){try{await DB.aM({name:String(d.name).trim(),designation:String(d.designation).trim(),payee_code:d.payee_code?String(d.payee_code).trim():null,phone:d.phone?String(d.phone).trim():'',join_date:d.join_date||new Date().toISOString().split('T')[0],retirement_date:d.retirement_date||null,status:'active'});ok++}catch(e){}}DB.log(cUser,'BulkImport:'+ok);closeModal();await refreshDash();showToast('Done',ok+' imported!','success')}
+
+// QR
+async function showPaymentQRModal(){showModal('Pay via QR','<div class="text-center py-8"><div class="spinner"></div></div>');const qr=await DB.gSet('payment_qr');if(!qr){document.getElementById('modalContent').innerHTML='<div class="space-y-4"><div class="text-center py-10"><i class="fas fa-qrcode text-6xl text-gray-300 mb-3"></i><p class="text-gray-500">No QR set</p>'+(isA()?'<button onclick="showQRUp()" class="mt-4 bg-violet-600 text-white px-6 py-2 rounded-xl font-bold">Upload</button>':'')+'</div><button onclick="closeModal()" class="w-full bg-gray-200 py-2 rounded-lg font-semibold">Close</button></div>';return}document.getElementById('modalContent').innerHTML='<div class="space-y-4"><div class="flex flex-col items-center gap-3 p-5"><img src="'+qr+'" class="w-64 h-64 object-contain rounded-xl shadow-lg"><p class="text-sm font-semibold">📱 Scan with UPI app</p>'+(isA()?'<button onclick="showQRUp()" class="text-xs text-violet-600 underline">Update</button>':'')+'</div><button onclick="closeModal()" class="w-full bg-gray-200 py-2 rounded-xl font-semibold">Close</button></div>'}
+function showQRUp(){if(!isA())return;showModal('Upload QR','<div class="space-y-4"><div class="border-2 border-dashed border-teal-300 rounded-xl p-8 text-center cursor-pointer hover:bg-teal-50" onclick="document.getElementById(\'qF\').click()"><i class="fas fa-cloud-upload-alt text-5xl text-teal-400 mb-3"></i><p>Select QR</p><input type="file" id="qF" accept="image/*" class="hidden" onchange="prevQR(event)"></div><div id="qPS" class="hidden text-center space-y-3"><img id="qPI" class="w-56 h-56 object-contain mx-auto rounded-xl border-2"><button onclick="saveQR()" id="sqBtn" class="w-full bg-green-600 text-white py-3 rounded-xl font-bold">Save</button></div><button onclick="closeModal()" class="w-full bg-gray-100 py-2 rounded-xl font-semibold">Cancel</button></div>')}
+let _qb=null;
+function prevQR(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{_qb=ev.target.result;document.getElementById('qPI').src=_qb;document.getElementById('qPS').classList.remove('hidden')};r.readAsDataURL(f)}
+async function saveQR(){if(!_qb)return;const b=document.getElementById('sqBtn');b.disabled=true;b.innerHTML='Saving...';await DB.sSet('payment_qr',_qb);DB.log(cUser,'Updated QR');_qb=null;closeModal();showToast('Done','QR updated!','success')}
+
+// SETTINGS
+function showSettingsModal(){if(!isA())return;showModal('Settings','<div class="space-y-4"><div class="bg-gray-50 p-4 rounded-xl text-sm">'+DR('Version',CONFIG.VERSION)+DR('Fee',fmt(CONFIG.MONTHLY_CONTRIBUTION))+DR('DB','Supabase Cloud')+DR('Address',CONFIG.SOCIETY_ADDRESS+', '+CONFIG.SOCIETY_CITY)+'</div><div class="grid grid-cols-2 gap-2"><button onclick="expBackup();closeModal()" class="bg-green-600 text-white py-2 rounded-xl font-semibold text-sm">Backup</button><button onclick="closeModal();showLogoUploadModal()" class="bg-teal-600 text-white py-2 rounded-xl font-semibold text-sm"><i class="fas fa-image mr-1"></i>Change Logo</button></div><button onclick="closeModal()" class="w-full bg-gray-200 py-2 rounded-lg font-semibold mt-2">Close</button></div>')}
+function showChangePasswordModal(){if(!isA())return;showModal('Change Passwords','<div class="space-y-4"><div class="bg-gradient-to-r from-purple-600 to-indigo-700 text-white rounded-xl p-4"><h3 class="text-lg font-bold"><i class="fas fa-key mr-2"></i>Change Passwords</h3><p class="text-sm opacity-80">Sirf wahi field bharo jisko change karna hai (min 8 characters)</p></div><div class="bg-gray-50 p-4 rounded-xl space-y-2"><h4 class="font-bold mb-2 text-gray-800"><i class="fas fa-user-shield mr-1 text-purple-600"></i>Admin Password</h4><input type="password" id="nAP" class="w-full p-2 border-2 border-gray-300 rounded-lg" placeholder="Naya admin password (min 8 chars)"><input type="password" id="nAPC" class="w-full p-2 border-2 border-gray-300 rounded-lg mt-2" placeholder="Confirm admin password"></div><div class="bg-gray-50 p-4 rounded-xl space-y-2"><h4 class="font-bold mb-2 text-gray-800"><i class="fas fa-eye mr-1 text-blue-600"></i>Viewer Password</h4><input type="password" id="nVP" class="w-full p-2 border-2 border-gray-300 rounded-lg" placeholder="Naya viewer password (min 8 chars)"><input type="password" id="nVPC" class="w-full p-2 border-2 border-gray-300 rounded-lg mt-2" placeholder="Confirm viewer password"></div><div id="pwdErr" class="hidden bg-red-50 border-l-4 border-red-500 text-red-700 p-3 rounded-lg text-sm"><i class="fas fa-exclamation-circle mr-2"></i><span id="pwdErrMsg"></span></div><div class="flex gap-3"><button onclick="savePwd()" id="spBtn" class="flex-1 bg-green-600 text-white py-2 rounded-xl font-semibold"><i class="fas fa-save mr-1"></i>Save</button><button onclick="closeModal()" class="flex-1 bg-gray-200 py-2 rounded-xl font-semibold">Cancel</button></div></div>')}
+async function savePwd(){const a=document.getElementById('nAP').value,ac=document.getElementById('nAPC').value,v=document.getElementById('nVP').value,vc=document.getElementById('nVPC').value;const errEl=document.getElementById('pwdErr'),errMsg=document.getElementById('pwdErrMsg');errEl.classList.add('hidden');if(!a&&!v){errEl.classList.remove('hidden');errMsg.textContent='Koi bhi password field nahi bhara!';return}if(a&&a.length<8){errEl.classList.remove('hidden');errMsg.textContent='Admin password kam se kam 8 characters ka hona chahiye!';return}if(v&&v.length<8){errEl.classList.remove('hidden');errMsg.textContent='Viewer password kam se kam 8 characters ka hona chahiye!';return}if(a&&a!==ac){errEl.classList.remove('hidden');errMsg.textContent='Admin password aur confirm password match nahi karte!';return}if(v&&v!==vc){errEl.classList.remove('hidden');errMsg.textContent='Viewer password aur confirm password match nahi karte!';return}const btn=document.getElementById('spBtn');btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin mr-1"></i>Saving...';try{if(a)await DB.uPwd('admin',a);if(v)await DB.uPwd('viewer',v);DB.log(cUser,'Changed passwords');closeModal();showToast('Done','Password update ho gaya! Ab dobara login karo.','success');setTimeout(()=>{if(confirm('Security ke liye ab logout hoga. OK?')){logout();}},1500)}catch(e){showToast('Error','Failed','error');btn.disabled=false;btn.innerHTML='<i class="fas fa-save mr-1"></i>Save'}}
+
+// INIT
+document.addEventListener('DOMContentLoaded',async function(){
+  // SECURITY: Remove any old plain-text passwords from localStorage
+  localStorage.removeItem('dgst_pwd_admin');
+  localStorage.removeItem('dgst_pwd_viewer');
+  const ls=document.getElementById('loadingStatus');try{ls.textContent='Initializing...';const ok=initSupa();if(!ok){ls.textContent='DB init failed!';setTimeout(()=>{document.getElementById('loadingOverlay').style.display='none';showLogin()},2000);return}ls.textContent='Testing connection...';try{await supa.from('members').select('id').limit(1);ls.textContent='Connected ✓'}catch(e){ls.textContent='Tables may need setup...'}await new Promise(r=>setTimeout(r,500));ls.textContent='Checking session...';if(chkSess()){ls.textContent='Loading app...';await new Promise(r=>setTimeout(r,300));document.getElementById('loadingOverlay').style.display='none';loadApp()}else{const firstRun=await DB.isFirstRun();document.getElementById('loadingOverlay').style.display='none';if(firstRun){showFirstTimeSetup()}else{showLogin()}}}catch(e){console.error('Init:',e);ls.textContent='Error...';setTimeout(()=>{document.getElementById('loadingOverlay').style.display='none';showLogin()},2000)}});
+</script>
+</body>
+</html>
